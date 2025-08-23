@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,7 +22,7 @@
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('dashboard') }}">
-                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                            <i class="fas fa-tachometer-alt"></i> Tableau de bord
                         </a>
                     </li>
                     <li class="nav-item">
@@ -32,17 +32,17 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('quality') }}">
-                            <i class="fas fa-check-circle"></i> Quality Control
+                            <i class="fas fa-check-circle"></i> Contrôle qualité
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('energy') }}">
-                            <i class="fas fa-bolt"></i> Energy
+                            <i class="fas fa-bolt"></i> Énergie
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('waste') }}">
-                            <i class="fas fa-recycle"></i> Waste Management
+                            <i class="fas fa-recycle"></i> Gestion des déchets
                         </a>
                     </li>
                 </ul>
@@ -52,9 +52,9 @@
                             <i class="fas fa-user"></i> Admin
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('users') }}">Manage Users</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('users') }}">Gérer les utilisateurs</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('login') }}">Logout</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('login') }}">Déconnexion</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -82,7 +82,7 @@
     <footer class="bg-light text-center py-3 mt-5">
         <div class="container">
             <small class="text-muted">
-                Dersa EcoQuality v1.0.0 - Ceramica Dersa, Tétouan, Morocco
+                Dersa EcoQuality v1.0.0 - Ceramica Dersa, Tétouan, Maroc
             </small>
         </div>
     </footer>
