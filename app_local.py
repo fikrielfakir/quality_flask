@@ -204,32 +204,57 @@ def production():
     
     if request.method == 'POST':
         try:
+            # Validate required fields
+            batch_number = request.form.get('batch_number')
+            product_type = request.form.get('product_type')
+            production_date = request.form.get('production_date')
+            planned_quantity = request.form.get('planned_quantity')
+            
+            if not all([batch_number, product_type, production_date, planned_quantity]):
+                flash('Veuillez remplir tous les champs obligatoires', 'error')
+                return redirect(url_for('production'))
+            
+            # Prepare data with proper NULL handling
             data = {
-                'batch_number': request.form.get('batch_number'),
-                'product_type': request.form.get('product_type'),
-                'production_date': request.form.get('production_date'),
-                'planned_quantity': request.form.get('planned_quantity', type=int),
-                'kiln_number': request.form.get('kiln_number'),
-                'firing_temperature': request.form.get('firing_temperature', type=float),
-                'firing_duration': request.form.get('firing_duration'),
+                'batch_number': batch_number.strip(),
+                'product_type': product_type,
+                'production_date': production_date,
+                'planned_quantity': int(planned_quantity),
+                'kiln_number': request.form.get('kiln_number').strip() if request.form.get('kiln_number') else None,
+                'firing_temperature': float(request.form.get('firing_temperature')) if request.form.get('firing_temperature') else None,
+                'firing_duration': request.form.get('firing_duration').strip() if request.form.get('firing_duration') else None,
                 'supervisor_id': session.get('user_id'),
-                'notes': request.form.get('notes'),
-                'status': 'planned'
+                'notes': request.form.get('notes').strip() if request.form.get('notes') else None,
+                'status': 'planned',
+                'actual_quantity': None,
+                'start_time': None,
+                'end_time': None
             }
             
-            # Remove empty values
-            data = {k: v for k, v in data.items() if v is not None and v != ''}
+            # Check if batch number already exists
+            existing_batch = db.execute_single(
+                "SELECT id FROM production_batches WHERE batch_number = ?", 
+                (data['batch_number'],)
+            )
+            if existing_batch:
+                flash(f'Le numéro de lot "{data["batch_number"]}" existe déjà', 'error')
+                return redirect(url_for('production'))
             
             batch = db.insert_record('production_batches', data)
             
             if batch:
-                flash('Production batch created successfully', 'success')
+                flash(f'Lot de production "{data["batch_number"]}" créé avec succès', 'success')
+                logger.info(f"Production batch created: {data['batch_number']} by user {session.get('user_id')}")
             else:
-                flash('Failed to create production batch', 'error')
+                flash('Échec de la création du lot de production', 'error')
+                logger.error(f"Failed to create production batch: {data}")
                 
+        except ValueError as ve:
+            logger.error(f"Production batch validation error: {ve}")
+            flash('Erreur de validation des données. Vérifiez les valeurs numériques.', 'error')
         except Exception as e:
             logger.error(f"Production batch creation error: {e}")
-            flash('Error creating production batch', 'error')
+            flash('Erreur lors de la création du lot de production', 'error')
     
     # Get batches with filters
     status = request.args.get('status')
