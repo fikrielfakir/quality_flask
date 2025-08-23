@@ -285,7 +285,12 @@ def production():
     query += " ORDER BY pb.production_date DESC"
     
     batches = db.execute_query(query, tuple(params))
-    return render_template('production.html', batches=batches)
+    
+    # Add today's date for the form
+    from datetime import date
+    today = date.today().isoformat()
+    
+    return render_template('production.html', batches=batches, today=today)
 
 @app.route('/quality', methods=['GET', 'POST'])
 def quality():
