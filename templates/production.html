@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Production Management - Dersa EcoQuality{% endblock %}
+{% block title %}Gestion de Production - Dersa EcoQuality{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-12">
         <h1 class="h3 mb-4">
             <i class="fas fa-cogs text-primary"></i> 
-            Production Batch Management
+            Gestion des Lots de Production
         </h1>
     </div>
 </div>
@@ -18,7 +18,7 @@
         <div class="card">
             <div class="card-header">
                 <h5 class="card-title mb-0">
-                    <i class="fas fa-plus"></i> Create New Production Batch
+                    <i class="fas fa-plus"></i> Créer un Nouveau Lot de Production
                 </h5>
             </div>
             <div class="card-body">
@@ -26,20 +26,20 @@
                     <div class="row">
                         <div class="col-md-3">
                             <div class="mb-3">
-                                <label for="batch_number" class="form-label">Batch Number *</label>
+                                <label for="batch_number" class="form-label">Numéro de Lot *</label>
                                 <input type="text" class="form-control" id="batch_number" name="batch_number" required>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="mb-3">
-                                <label for="product_type" class="form-label">Product Type *</label>
+                                <label for="product_type" class="form-label">Type de Produit *</label>
                                 <select class="form-select" id="product_type" name="product_type" required>
-                                    <option value="">Select Product Type</option>
-                                    <option value="floor_tiles">Floor Tiles</option>
-                                    <option value="wall_tiles">Wall Tiles</option>
+                                    <option value="">Sélectionner le Type de Produit</option>
+                                    <option value="floor_tiles">Carreaux de Sol</option>
+                                    <option value="wall_tiles">Carreaux Muraux</option>
                                     <option value="gres_cerame">Grès Cérame</option>
-                                    <option value="porcelain_tiles">Porcelain Tiles</option>
-                                    <option value="rectified_tiles">Rectified Tiles</option>
+                                    <option value="porcelain_tiles">Carreaux en Porcelaine</option>
+                                    <option value="rectified_tiles">Carreaux Rectifiés</option>
                                 </select>
                             </div>
                         </div>

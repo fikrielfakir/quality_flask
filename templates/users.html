@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}User Management - Dersa EcoQuality{% endblock %}
+{% block title %}Gestion des Utilisateurs - Dersa EcoQuality{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-12">
         <h1 class="h3 mb-4">
             <i class="fas fa-users text-primary"></i> 
-            User Management
+            Gestion des Utilisateurs
         </h1>
     </div>
 </div>
@@ -18,7 +18,7 @@
         <div class="card">
             <div class="card-header">
                 <h5 class="card-title mb-0">
-                    <i class="fas fa-user-plus"></i> Add New User
+                    <i class="fas fa-user-plus"></i> Ajouter Nouvel Utilisateur
                 </h5>
             </div>
             <div class="card-body">
@@ -26,7 +26,7 @@
                     <div class="row">
                         <div class="col-md-3">
                             <div class="mb-3">
-                                <label for="username" class="form-label">Username *</label>
+                                <label for="username" class="form-label">Nom d'utilisateur *</label>
                                 <input type="text" class="form-control" id="username" name="username" required>
                             </div>
                         </div>
@@ -38,13 +38,13 @@
                         </div>
                         <div class="col-md-3">
                             <div class="mb-3">
-                                <label for="full_name" class="form-label">Full Name *</label>
+                                <label for="full_name" class="form-label">Nom Complet *</label>
                                 <input type="text" class="form-control" id="full_name" name="full_name" required>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="mb-3">
-                                <label for="password" class="form-label">Password *</label>
+                                <label for="password" class="form-label">Mot de passe *</label>
                                 <input type="password" class="form-control" id="password" name="password" required>
                             </div>
                         </div>
@@ -52,10 +52,10 @@
                     <div class="row">
                         <div class="col-md-4">
                             <div class="mb-3">
-                                <label for="role" class="form-label">Role *</label>
+                                <label for="role" class="form-label">Rôle *</label>
                                 <select class="form-select" id="role" name="role" required>
-                                    <option value="">Select Role</option>
-                                    <option value="admin">Administrator</option>
+                                    <option value="">Sélectionner le Rôle</option>
+                                    <option value="admin">Administrateur</option>
                                     <option value="production_manager">Production Manager</option>
                                     <option value="quality_technician">Quality Technician</option>
                                     <option value="operator">Operator</option>

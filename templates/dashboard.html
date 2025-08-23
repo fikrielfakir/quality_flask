@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard - Dersa EcoQuality{% endblock %}
+{% block title %}Tableau de Bord - Dersa EcoQuality{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-12">
         <h1 class="h3 mb-4">
             <i class="fas fa-tachometer-alt text-primary"></i> 
-            Dashboard - Quality Management Overview
+            Tableau de Bord - Vue d'Ensemble de la Gestion Qualité
         </h1>
     </div>
 </div>
@@ -19,9 +19,9 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h5 class="card-title">Production Batches</h5>
+                        <h5 class="card-title">Lots de Production</h5>
                         <h2 class="mb-0" id="total-batches">{{ kpis.production.total_batches or 0 }}</h2>
-                        <small>This month</small>
+                        <small>Ce mois-ci</small>
                     </div>
                     <i class="fas fa-boxes fa-2x opacity-75"></i>
                 </div>
@@ -33,9 +33,9 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h5 class="card-title">Quality Tests</h5>
+                        <h5 class="card-title">Tests Qualité</h5>
                         <h2 class="mb-0" id="total-tests">{{ kpis.quality.total_tests or 0 }}</h2>
-                        <small>Compliance: {{ "%.1f"|format(kpis.quality.compliance_rate or 0) }}%</small>
+                        <small>Conformité: {{ "%.1f"|format(kpis.quality.compliance_rate or 0) }}%</small>
                     </div>
                     <i class="fas fa-check-circle fa-2x opacity-75"></i>
                 </div>
@@ -47,9 +47,9 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h5 class="card-title">Energy Consumption</h5>
+                        <h5 class="card-title">Consommation Énergétique</h5>
                         <h2 class="mb-0" id="total-energy">{{ "%.1f"|format(kpis.energy.total_consumption or 0) }}</h2>
-                        <small>kWh this month</small>
+                        <small>kWh ce mois-ci</small>
                     </div>
                     <i class="fas fa-bolt fa-2x opacity-75"></i>
                 </div>
@@ -61,9 +61,9 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h5 class="card-title">Waste Management</h5>
+                        <h5 class="card-title">Gestion des Déchets</h5>
                         <h2 class="mb-0" id="total-waste">{{ "%.1f"|format(kpis.waste.total_waste or 0) }}</h2>
-                        <small>kg this month</small>
+                        <small>kg ce mois-ci</small>
                     </div>
                     <i class="fas fa-recycle fa-2x opacity-75"></i>
                 </div>
@@ -79,7 +79,7 @@
         <div class="card">
             <div class="card-header">
                 <h5 class="card-title mb-0">
-                    <i class="fas fa-cogs"></i> Recent Production Batches
+                    <i class="fas fa-cogs"></i> Lots de Production Récents
                 </h5>
             </div>
             <div class="card-body">
@@ -87,9 +87,9 @@
                     <table class="table table-sm">
                         <thead>
                             <tr>
-                                <th>Batch #</th>
-                                <th>Product Type</th>
-                                <th>Status</th>
+                                <th>Lot #</th>
+                                <th>Type de Produit</th>
+                                <th>Statut</th>
                                 <th>Date</th>
                             </tr>
                         </thead>
@@ -107,7 +107,7 @@
                             </tr>
                             {% else %}
                             <tr>
-                                <td colspan="4" class="text-center text-muted">No recent batches</td>
+                                <td colspan="4" class="text-center text-muted">Aucun lot récent</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -115,7 +115,7 @@
                 </div>
                 <div class="text-center mt-3">
                     <a href="{{ url_for('production') }}" class="btn btn-outline-primary btn-sm">
-                        View All Batches
+                        Voir Tous les Lots
                     </a>
                 </div>
             </div>
@@ -127,7 +127,7 @@
         <div class="card">
             <div class="card-header">
                 <h5 class="card-title mb-0">
-                    <i class="fas fa-check-circle"></i> Recent Quality Tests
+                    <i class="fas fa-check-circle"></i> Tests Qualité Récents
                 </h5>
             </div>
             <div class="card-body">
@@ -135,9 +135,9 @@
                     <table class="table table-sm">
                         <thead>
                             <tr>
-                                <th>Batch</th>
-                                <th>Test Type</th>
-                                <th>Result</th>
+                                <th>Lot</th>
+                                <th>Type de Test</th>
+                                <th>Résultat</th>
                                 <th>Date</th>
                             </tr>
                         </thead>
@@ -155,7 +155,7 @@
                             </tr>
                             {% else %}
                             <tr>
-                                <td colspan="4" class="text-center text-muted">No recent tests</td>
+                                <td colspan="4" class="text-center text-muted">Aucun test récent</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -163,7 +163,7 @@
                 </div>
                 <div class="text-center mt-3">
                     <a href="{{ url_for('quality') }}" class="btn btn-outline-success btn-sm">
-                        View All Tests
+                        Voir Tous les Tests
                     </a>
                 </div>
             </div>
