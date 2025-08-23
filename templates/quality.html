@@ -67,9 +67,9 @@
                     <div class="row">
                         <div class="col-md-3">
                             <div class="mb-3">
-                                <label for="batch_id" class="form-label">Production Batch *</label>
+                                <label for="batch_id" class="form-label">Lot de Production *</label>
                                 <select class="form-select" id="batch_id" name="batch_id" required>
-                                    <option value="">Select Batch</option>
+                                    <option value="">Sélectionner le Lot</option>
                                     {% for batch in available_batches %}
                                     <option value="{{ batch.id }}">{{ batch.batch_number }} - {{ batch.product_type }}</option>
                                     {% endfor %}
@@ -78,28 +78,28 @@
                         </div>
                         <div class="col-md-3">
                             <div class="mb-3">
-                                <label for="test_type" class="form-label">Test Type *</label>
+                                <label for="test_type" class="form-label">Type de Test *</label>
                                 <select class="form-select" id="test_type" name="test_type" required>
-                                    <option value="">Select Test Type</option>
-                                    <option value="dimensional">Dimensional Testing</option>
-                                    <option value="water_absorption">Water Absorption</option>
-                                    <option value="breaking_strength">Breaking Strength</option>
-                                    <option value="abrasion_resistance">Abrasion Resistance</option>
-                                    <option value="visual_inspection">Visual Inspection</option>
+                                    <option value="">Sélectionner le Type de Test</option>
+                                    <option value="dimensional">Contrôles Dimensionnels (ISO 13006)</option>
+                                    <option value="water_absorption">Absorption d'Eau (ISO 10545-3)</option>
+                                    <option value="breaking_strength">Résistance à la Rupture (ISO 10545-4)</option>
+                                    <option value="abrasion_resistance">Résistance à l'Abrasion (PEI)</option>
+                                    <option value="visual_inspection">Inspection Visuelle</option>
                                 </select>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="mb-3">
-                                <label for="test_date" class="form-label">Test Date *</label>
+                                <label for="test_date" class="form-label">Date du Test *</label>
                                 <input type="date" class="form-control" id="test_date" name="test_date" required>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="mb-3">
-                                <label for="technician_id" class="form-label">Technician</label>
+                                <label for="technician_id" class="form-label">Technicien</label>
                                 <select class="form-select" id="technician_id" name="technician_id">
-                                    <option value="">Select Technician</option>
+                                    <option value="">Sélectionner le Technicien</option>
                                     {% for user in technicians %}
                                     <option value="{{ user.id }}">{{ user.full_name }}</option>
                                     {% endfor %}
@@ -110,29 +110,29 @@
 
                     <!-- Dimensional Measurements -->
                     <div id="dimensional_fields" class="test-fields" style="display: none;">
-                        <h6 class="text-primary">Dimensional Measurements (ISO 13006)</h6>
+                        <h6 class="text-primary">Mesures Dimensionnelles (ISO 13006) - Tolérance ±0.5%</h6>
                         <div class="row">
                             <div class="col-md-3">
                                 <div class="mb-3">
-                                    <label for="length_mm" class="form-label">Length (mm)</label>
+                                    <label for="length_mm" class="form-label">Longueur (mm)</label>
                                     <input type="number" step="0.01" class="form-control" id="length_mm" name="length_mm">
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="mb-3">
-                                    <label for="width_mm" class="form-label">Width (mm)</label>
+                                    <label for="width_mm" class="form-label">Largeur (mm)</label>
                                     <input type="number" step="0.01" class="form-control" id="width_mm" name="width_mm">
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="mb-3">
-                                    <label for="thickness_mm" class="form-label">Thickness (mm)</label>
+                                    <label for="thickness_mm" class="form-label">Épaisseur (mm)</label>
                                     <input type="number" step="0.01" class="form-control" id="thickness_mm" name="thickness_mm">
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="mb-3">
-                                    <label for="warping_percentage" class="form-label">Warping (%)</label>
+                                    <label for="warping_percentage" class="form-label">Gauchissement (%) ≤0.6%</label>
                                     <input type="number" step="0.01" class="form-control" id="warping_percentage" name="warping_percentage">
                                 </div>
                             </div>
@@ -141,30 +141,30 @@
 
                     <!-- Physical Properties -->
                     <div id="physical_fields" class="test-fields" style="display: none;">
-                        <h6 class="text-primary">Physical Properties</h6>
+                        <h6 class="text-primary">Propriétés Physiques - Tests ISO 10545</h6>
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label for="water_absorption_percentage" class="form-label">Water Absorption (%)</label>
+                                    <label for="water_absorption_percentage" class="form-label">Absorption d'Eau (%) ≤3% Grès</label>
                                     <input type="number" step="0.01" class="form-control" id="water_absorption_percentage" name="water_absorption_percentage">
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label for="breaking_strength_n" class="form-label">Breaking Strength (N)</label>
+                                    <label for="breaking_strength_n" class="form-label">Résistance Rupture (N) ≥1300N</label>
                                     <input type="number" class="form-control" id="breaking_strength_n" name="breaking_strength_n">
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label for="abrasion_resistance_pei" class="form-label">Abrasion Resistance (PEI)</label>
+                                    <label for="abrasion_resistance_pei" class="form-label">Résistance Abrasion (PEI)</label>
                                     <select class="form-select" id="abrasion_resistance_pei" name="abrasion_resistance_pei">
-                                        <option value="">Select PEI Rating</option>
-                                        <option value="1">PEI 1 - Light residential</option>
-                                        <option value="2">PEI 2 - Moderate residential</option>
-                                        <option value="3">PEI 3 - Heavy residential</option>
+                                        <option value="">Sélectionner Classification PEI</option>
+                                        <option value="1">PEI 1 - Résidentiel léger</option>
+                                        <option value="2">PEI 2 - Résidentiel modéré</option>
+                                        <option value="3">PEI 3 - Résidentiel intense</option>
                                         <option value="4">PEI 4 - Commercial</option>
-                                        <option value="5">PEI 5 - Heavy commercial</option>
+                                        <option value="5">PEI 5 - Commercial intense</option>
                                     </select>
                                 </div>
                             </div>
@@ -173,32 +173,77 @@
 
                     <!-- Visual Inspection -->
                     <div id="visual_fields" class="test-fields" style="display: none;">
-                        <h6 class="text-primary">Visual Inspection</h6>
+                        <h6 class="text-primary">Inspection Visuelle - Capture Défauts Multilingue</h6>
                         <div class="row">
                             <div class="col-md-3">
                                 <div class="mb-3">
-                                    <label for="defect_type" class="form-label">Defect Type</label>
+                                    <label for="defect_type" class="form-label">Type de Défaut</label>
                                     <select class="form-select" id="defect_type" name="defect_type">
-                                        <option value="none">No Defects</option>
-                                        <option value="crack">Crack</option>
-                                        <option value="chip">Chip</option>
-                                        <option value="glaze_defect">Glaze Defect</option>
-                                        <option value="color_variation">Color Variation</option>
-                                        <option value="surface_irregularity">Surface Irregularity</option>
-                                        <option value="size_variation">Size Variation</option>
+                                        <option value="none">Aucun Défaut</option>
+                                        <option value="crack">Fissure / شق</option>
+                                        <option value="chip">Ébréchure / رقاقة</option>
+                                        <option value="glaze_defect">Défaut Émail / عيب المينا</option>
+                                        <option value="color_variation">Variation Couleur / تباين اللون</option>
+                                        <option value="surface_irregularity">Irrégularité Surface / عدم انتظام السطح</option>
+                                        <option value="size_variation">Variation Taille / تباين الحجم</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-2">
                                 <div class="mb-3">
-                                    <label for="defect_count" class="form-label">Defect Count</label>
+                                    <label for="defect_count" class="form-label">Nombre de Défauts</label>
                                     <input type="number" class="form-control" id="defect_count" name="defect_count" value="0">
                                 </div>
                             </div>
-                            <div class="col-md-7">
+                            <div class="col-md-3">
                                 <div class="mb-3">
-                                    <label for="defect_description" class="form-label">Defect Description</label>
+                                    <label for="defect_severity" class="form-label">Sévérité</label>
+                                    <select class="form-select" id="defect_severity" name="defect_severity">
+                                        <option value="minor">Mineur</option>
+                                        <option value="major">Majeur</option>
+                                        <option value="critical">Critique</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="defect_description" class="form-label">Description du Défaut</label>
                                     <input type="text" class="form-control" id="defect_description" name="defect_description">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Photo Upload for Defect Capture -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="defect_photo" class="form-label">Photo du Défaut (Optionnel)</label>
+                                <input type="file" class="form-control" id="defect_photo" name="defect_photo" accept="image/*">
+                                <small class="text-muted">Formats acceptés: JPG, PNG, WEBP (max 5MB)</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="equipment_used" class="form-label">Équipement Utilisé</label>
+                                <select class="form-select" id="equipment_used" name="equipment_used">
+                                    <option value="">Sélectionner l'équipement</option>
+                                    <option value="digital_caliper_001">Pied à Coulisse Digital #001</option>
+                                    <option value="universal_tester_002">Machine d'Essai Universelle #002</option>
+                                    <option value="absorption_tester_003">Testeur d'Absorption #003</option>
+                                    <option value="pei_tester_004">Testeur PEI #004</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Real-time ISO Compliance Alerts -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div id="iso_compliance_alert" class="alert" style="display: none;">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <div id="compliance_message"></div>
                                 </div>
                             </div>
                         </div>
@@ -207,14 +252,14 @@
                     <div class="row">
                         <div class="col-12">
                             <div class="mb-3">
-                                <label for="test_notes" class="form-label">Test Notes</label>
-                                <textarea class="form-control" id="test_notes" name="test_notes" rows="2"></textarea>
+                                <label for="test_notes" class="form-label">Notes du Test</label>
+                                <textarea class="form-control" id="test_notes" name="test_notes" rows="2" placeholder="Observations, conditions de test, commentaires..."></textarea>
                             </div>
                         </div>
                     </div>
 
                     <button type="submit" class="btn btn-success">
-                        <i class="fas fa-save"></i> Record Test Results
+                        <i class="fas fa-save"></i> Enregistrer Résultats de Test
                     </button>
                 </form>
             </div>
@@ -228,7 +273,7 @@
         <div class="card">
             <div class="card-header">
                 <h5 class="card-title mb-0">
-                    <i class="fas fa-list"></i> Quality Test Results
+                    <i class="fas fa-list"></i> Résultats des Tests Qualité
                     <span class="badge bg-secondary ms-2">{{ tests|length }} tests</span>
                 </h5>
             </div>
@@ -237,14 +282,14 @@
                     <table class="table table-hover">
                         <thead class="table-light">
                             <tr>
-                                <th>Test Date</th>
-                                <th>Batch</th>
-                                <th>Test Type</th>
-                                <th>Key Results</th>
-                                <th>ISO Compliant</th>
-                                <th>Pass/Fail</th>
-                                <th>Technician</th>
-                                <th>Status</th>
+                                <th>Date de Test</th>
+                                <th>Lot</th>
+                                <th>Type de Test</th>
+                                <th>Résultats Clés</th>
+                                <th>Conforme ISO</th>
+                                <th>Réussi/Échoué</th>
+                                <th>Technicien</th>
+                                <th>Statut</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -258,25 +303,25 @@
                                 <td>{{ test.test_type.replace('_', ' ').title() }}</td>
                                 <td>
                                     {% if test.water_absorption_percentage %}
-                                        Water: {{ test.water_absorption_percentage }}%<br>
+                                        Absorption: {{ test.water_absorption_percentage }}%<br>
                                     {% endif %}
                                     {% if test.breaking_strength_n %}
-                                        Strength: {{ test.breaking_strength_n }}N<br>
+                                        Résistance: {{ test.breaking_strength_n }}N<br>
                                     {% endif %}
                                     {% if test.warping_percentage %}
-                                        Warping: {{ test.warping_percentage }}%<br>
+                                        Gauchissement: {{ test.warping_percentage }}%<br>
                                     {% endif %}
                                     {% if test.defect_count > 0 %}
-                                        Defects: {{ test.defect_count }}
+                                        Défauts: {{ test.defect_count }}
                                     {% endif %}
                                 </td>
                                 <td>
                                     {% if test.iso_compliant is not none %}
                                         <span class="badge bg-{{ 'success' if test.iso_compliant else 'danger' }}">
-                                            {{ 'Yes' if test.iso_compliant else 'No' }}
+                                            {{ 'Oui' if test.iso_compliant else 'Non' }}
                                         </span>
                                     {% else %}
-                                        <span class="badge bg-secondary">Pending</span>
+                                        <span class="badge bg-secondary">En Attente</span>
                                     {% endif %}
                                 </td>
                                 <td>
@@ -285,7 +330,7 @@
                                             {{ test.pass_fail }}
                                         </span>
                                     {% else %}
-                                        <span class="badge bg-warning">Pending</span>
+                                        <span class="badge bg-warning">En Attente</span>
                                     {% endif %}
                                 </td>
                                 <td>{{ test.technician_name or '-' }}</td>
@@ -298,7 +343,7 @@
                             {% else %}
                             <tr>
                                 <td colspan="8" class="text-center text-muted py-4">
-                                    No quality tests recorded yet. Add your first test above.
+                                    Aucun test qualité enregistré. Ajoutez votre premier test ci-dessus.
                                 </td>
                             </tr>
                             {% endfor %}
@@ -317,21 +362,258 @@
 // Set today's date as default
 document.getElementById('test_date').value = new Date().toISOString().split('T')[0];
 
-// Show/hide test fields based on test type
-document.getElementById('test_type').addEventListener('change', function() {
-    const testType = this.value;
-    const allFields = document.querySelectorAll('.test-fields');
+// ISO Standards for real-time validation
+const isoStandards = {
+    length_tolerance: { max: 0.5, unit: '%' },
+    width_tolerance: { max: 0.5, unit: '%' },
+    thickness_tolerance: { max: 0.5, unit: '%' },
+    warping_percentage: { max: 0.6, unit: '%' },
+    water_absorption_percentage: { max: 3.0, unit: '%' },
+    breaking_strength_n: { min: 1300, unit: 'N' }
+};
+
+// Real-time ISO compliance validation
+function validateISO() {
+    const alertDiv = document.getElementById('iso_compliance_alert');
+    const messageDiv = document.getElementById('compliance_message');
+    let violations = [];
+    
+    // Check dimensional tolerances
+    const length = parseFloat(document.getElementById('length_mm').value);
+    const width = parseFloat(document.getElementById('width_mm').value);
+    const thickness = parseFloat(document.getElementById('thickness_mm').value);
+    const warping = parseFloat(document.getElementById('warping_percentage').value);
+    
+    if (warping && warping > isoStandards.warping_percentage.max) {
+        violations.push(`Gauchissement (${warping}%) dépasse la limite ISO 13006 (≤${isoStandards.warping_percentage.max}%)`);
+    }
+    
+    // Check physical properties
+    const waterAbsorption = parseFloat(document.getElementById('water_absorption_percentage').value);
+    const breakingStrength = parseFloat(document.getElementById('breaking_strength_n').value);
+    
+    if (waterAbsorption && waterAbsorption > isoStandards.water_absorption_percentage.max) {
+        violations.push(`Absorption d'eau (${waterAbsorption}%) dépasse la limite ISO 10545-3 (≤${isoStandards.water_absorption_percentage.max}% pour grès cérame)`);
+    }
+    
+    if (breakingStrength && breakingStrength < isoStandards.breaking_strength_n.min) {
+        violations.push(`Résistance à la rupture (${breakingStrength}N) inférieure à la norme ISO 10545-4 (≥${isoStandards.breaking_strength_n.min}N)`);
+    }
+    
+    // Show/hide compliance alert
+    if (violations.length > 0) {
+        alertDiv.className = 'alert alert-danger';
+        alertDiv.style.display = 'block';
+        messageDiv.innerHTML = '<strong>Non-conformité ISO détectée:</strong><ul>' + 
+            violations.map(v => `<li>${v}</li>`).join('') + '</ul>' +
+            '<small>Recommandation: Vérifier les paramètres de production et répéter le test.</small>';
+    } else {
+        alertDiv.className = 'alert alert-success';
+        alertDiv.style.display = 'block';
+        messageDiv.innerHTML = '<strong><i class="fas fa-check-circle"></i> Conformité ISO validée</strong> - Tous les paramètres respectent les normes en vigueur.';
+    }
+}
+
+// Add event listeners for real-time validation
+document.addEventListener('DOMContentLoaded', function() {
+    const inputs = ['warping_percentage', 'water_absorption_percentage', 'breaking_strength_n'];
+    inputs.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('input', validateISO);
+            element.addEventListener('change', validateISO);
+        }
+    });
+});
+
+// Enhanced test type field management with validation
+function updateTestFields() {
+    const testType = document.getElementById('test_type').value;
+    const fields = ['dimensional_fields', 'physical_fields', 'visual_fields'];
     
     // Hide all fields first
-    allFields.forEach(field => field.style.display = 'none');
+    fields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) field.style.display = 'none';
+    });
     
-    // Show relevant fields
-    if (testType === 'dimensional') {
-        document.getElementById('dimensional_fields').style.display = 'block';
-    } else if (testType === 'water_absorption' || testType === 'breaking_strength' || testType === 'abrasion_resistance') {
-        document.getElementById('physical_fields').style.display = 'block';
-    } else if (testType === 'visual_inspection') {
-        document.getElementById('visual_fields').style.display = 'block';
+    // Show relevant fields and clear others
+    switch(testType) {
+        case 'dimensional':
+            document.getElementById('dimensional_fields').style.display = 'block';
+            clearPhysicalFields();
+            clearVisualFields();
+            break;
+        case 'water_absorption':
+        case 'breaking_strength':
+        case 'abrasion_resistance':
+            document.getElementById('physical_fields').style.display = 'block';
+            clearDimensionalFields();
+            clearVisualFields();
+            break;
+        case 'visual_inspection':
+            document.getElementById('visual_fields').style.display = 'block';
+            clearDimensionalFields();
+            clearPhysicalFields();
+            break;
+    }
+}
+
+// Field clearing functions
+function clearDimensionalFields() {
+    ['length_mm', 'width_mm', 'thickness_mm', 'warping_percentage'].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) element.value = '';
+    });
+}
+
+function clearPhysicalFields() {
+    ['water_absorption_percentage', 'breaking_strength_n', 'abrasion_resistance_pei'].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) element.value = '';
+    });
+}
+
+function clearVisualFields() {
+    ['defect_type', 'defect_count', 'defect_severity', 'defect_description'].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            if (element.type === 'select-one') {
+                element.selectedIndex = 0;
+            } else {
+                element.value = element.id === 'defect_count' ? '0' : '';
+            }
+        }
+    });
+}
+
+// Enhanced test type change handler
+document.getElementById('test_type').addEventListener('change', updateTestFields);
+
+// Equipment calibration alerts
+function checkEquipmentCalibration() {
+    const equipment = document.getElementById('equipment_used').value;
+    const alertDiv = document.getElementById('iso_compliance_alert');
+    const messageDiv = document.getElementById('compliance_message');
+    
+    // Simulate equipment calibration status (In real system, this would come from database)
+    const equipmentStatus = {
+        'digital_caliper_001': { lastCalibration: '2024-12-15', status: 'valid' },
+        'universal_tester_002': { lastCalibration: '2024-11-20', status: 'expires_soon' },
+        'absorption_tester_003': { lastCalibration: '2024-10-10', status: 'expired' },
+        'pei_tester_004': { lastCalibration: '2024-12-01', status: 'valid' }
+    };
+    
+    if (equipment && equipmentStatus[equipment]) {
+        const status = equipmentStatus[equipment];
+        switch(status.status) {
+            case 'expired':
+                alertDiv.className = 'alert alert-danger';
+                alertDiv.style.display = 'block';
+                messageDiv.innerHTML = `<strong><i class="fas fa-exclamation-triangle"></i> Équipement non calibré!</strong><br>
+                    L'équipement sélectionné a expiré son calibrage (dernier: ${status.lastCalibration}). 
+                    <br>Veuillez effectuer un calibrage avant de procéder au test.`;
+                break;
+            case 'expires_soon':
+                alertDiv.className = 'alert alert-warning';
+                alertDiv.style.display = 'block';
+                messageDiv.innerHTML = `<strong><i class="fas fa-clock"></i> Calibrage proche de l'expiration</strong><br>
+                    L'équipement nécessitera un calibrage prochainement (dernier: ${status.lastCalibration}).`;
+                break;
+            case 'valid':
+                alertDiv.className = 'alert alert-success';
+                alertDiv.style.display = 'block';
+                messageDiv.innerHTML = `<strong><i class="fas fa-check-circle"></i> Équipement calibré</strong><br>
+                    Dernier calibrage: ${status.lastCalibration}. Équipement prêt pour les tests.`;
+                break;
+        }
+    }
+}
+
+// Add equipment calibration check
+document.getElementById('equipment_used').addEventListener('change', checkEquipmentCalibration);
+
+// Defect severity color coding
+document.getElementById('defect_severity').addEventListener('change', function() {
+    const severity = this.value;
+    const severityColors = {
+        'minor': 'border-warning',
+        'major': 'border-danger', 
+        'critical': 'border-dark'
+    };
+    
+    // Remove previous classes
+    this.className = this.className.replace(/border-\w+/g, '');
+    
+    // Add appropriate color
+    if (severityColors[severity]) {
+        this.classList.add(severityColors[severity]);
+    }
+});
+
+// Photo upload preview
+document.getElementById('defect_photo').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        // Validate file size (5MB max)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('La taille du fichier ne doit pas dépasser 5MB.');
+            this.value = '';
+            return;
+        }
+        
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            alert('Veuillez sélectionner un fichier image valide.');
+            this.value = '';
+            return;
+        }
+        
+        // Show file info
+        const fileInfo = document.createElement('small');
+        fileInfo.className = 'text-success d-block mt-1';
+        fileInfo.innerHTML = `<i class="fas fa-check"></i> ${file.name} (${(file.size/1024/1024).toFixed(2)}MB)`;
+        
+        // Remove existing file info
+        const existing = this.parentNode.querySelector('.text-success');
+        if (existing) existing.remove();
+        
+        this.parentNode.appendChild(fileInfo);
+    }
+});
+
+// Form validation before submit
+document.querySelector('form').addEventListener('submit', function(e) {
+    const testType = document.getElementById('test_type').value;
+    const equipment = document.getElementById('equipment_used').value;
+    
+    if (!testType) {
+        alert('Veuillez sélectionner un type de test.');
+        e.preventDefault();
+        return;
+    }
+    
+    if (!equipment) {
+        const confirmation = confirm('Aucun équipement sélectionné. Voulez-vous continuer sans traçabilité d\'équipement?');
+        if (!confirmation) {
+            e.preventDefault();
+            return;
+        }
+    }
+    
+    // Check if any test data is entered
+    let hasData = false;
+    const inputs = document.querySelectorAll('input[type="number"], select');
+    inputs.forEach(input => {
+        if (input.value && input.value !== '' && input.value !== '0') {
+            hasData = true;
+        }
+    });
+    
+    if (!hasData) {
+        alert('Veuillez entrer au moins une mesure ou observation pour ce test.');
+        e.preventDefault();
+        return;
     }
 });
 </script>

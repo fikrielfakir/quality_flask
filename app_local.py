@@ -12,6 +12,9 @@ from local_database import LocalDatabaseManager
 import json
 from io import BytesIO
 import csv
+from werkzeug.utils import secure_filename
+from werkzeug.datastructures import FileStorage
+from enhanced_iso_compliance import check_enhanced_iso_compliance, check_iso_compliance
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -280,18 +283,59 @@ def quality():
                 'abrasion_resistance_pei': request.form.get('abrasion_resistance_pei', type=int),
                 'defect_type': request.form.get('defect_type'),
                 'defect_count': request.form.get('defect_count', type=int),
+                'defect_severity': request.form.get('defect_severity'),
                 'defect_description': request.form.get('defect_description'),
+                'equipment_used': request.form.get('equipment_used'),
                 'test_notes': request.form.get('test_notes'),
                 'status': 'completed'
             }
             
+            # Handle photo upload
+            defect_photo = request.files.get('defect_photo')
+            if defect_photo and defect_photo.filename:
+                try:
+                    filename = secure_filename(defect_photo.filename)
+                    # Create uploads directory if it doesn't exist
+                    upload_dir = os.path.join('static', 'uploads', 'defects')
+                    os.makedirs(upload_dir, exist_ok=True)
+                    
+                    # Generate unique filename with timestamp
+                    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                    file_extension = filename.rsplit('.', 1)[1].lower() if '.' in filename else 'jpg'
+                    new_filename = f"defect_{timestamp}.{file_extension}"
+                    
+                    file_path = os.path.join(upload_dir, new_filename)
+                    defect_photo.save(file_path)
+                    
+                    # Store relative path in database
+                    data['defect_image_url'] = f"uploads/defects/{new_filename}"
+                    
+                except Exception as e:
+                    logger.error(f"Photo upload error: {e}")
+                    flash('Photo upload failed, but test was recorded', 'warning')
+            
+            # Enhanced equipment tracking
+            if data.get('equipment_used'):
+                equipment_info = db.get_equipment_by_code(data['equipment_used'])
+                if equipment_info:
+                    data['equipment_calibration_date'] = equipment_info['last_calibration_date']
+                    
+                    # Check calibration status
+                    if equipment_info['calibration_status'] == 'expired':
+                        flash(f"ATTENTION: L'équipement {equipment_info['equipment_name']} a un calibrage expiré!", 'warning')
+                    elif equipment_info['calibration_status'] == 'expires_soon':
+                        flash(f"AVERTISSEMENT: L'équipement {equipment_info['equipment_name']} nécessite un calibrage prochainement", 'warning')
+            
             # Remove empty values
             data = {k: v for k, v in data.items() if v is not None and v != ''}
             
-            # Check ISO compliance
-            iso_compliance = check_iso_compliance(data)
+            # Enhanced ISO compliance with scoring
+            iso_compliance, compliance_score, corrective_actions = check_enhanced_iso_compliance(data)
             data['iso_compliant'] = iso_compliance
             data['pass_fail'] = 'PASS' if iso_compliance else 'FAIL'
+            data['auto_pass_fail'] = True
+            data['compliance_score'] = compliance_score
+            data['corrective_actions'] = corrective_actions if corrective_actions else None
             
             test = db.insert_record('quality_tests', data)
             
@@ -309,6 +353,17 @@ def quality():
     available_batches = db.execute_query("SELECT id, batch_number, product_type FROM production_batches ORDER BY production_date DESC")
     technicians = db.execute_query("SELECT id, full_name FROM users WHERE role IN ('quality_technician', 'admin')")
     
+    # Get available equipment
+    available_equipment = db.execute_query("""
+        SELECT equipment_code, equipment_name, calibration_status, calibration_due_date
+        FROM equipment 
+        WHERE is_active = 1 
+        ORDER BY equipment_name
+    """)
+    
+    # Update equipment calibration status
+    db.update_equipment_calibration_status()
+    
     tests = db.execute_query("""
         SELECT qt.*, pb.batch_number, pb.product_type, u.full_name as technician_name
         FROM quality_tests qt
@@ -321,6 +376,7 @@ def quality():
                          iso_standards=iso_standards,
                          available_batches=available_batches,
                          technicians=technicians,
+                         available_equipment=available_equipment,
                          tests=tests)
 
 @app.route('/energy', methods=['GET', 'POST'])

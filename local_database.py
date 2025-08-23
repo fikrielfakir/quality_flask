@@ -98,8 +98,13 @@ class LocalDatabaseManager:
                     -- Visual inspection
                     defect_type VARCHAR(50) DEFAULT 'none',
                     defect_count INTEGER DEFAULT 0,
+                    defect_severity VARCHAR(20) DEFAULT 'minor',
                     defect_description TEXT,
                     defect_image_url VARCHAR(500),
+                    
+                    -- Equipment tracking
+                    equipment_used VARCHAR(100),
+                    equipment_calibration_date DATE,
                     
                     -- Test results
                     status VARCHAR(50) DEFAULT 'pending',
@@ -107,11 +112,34 @@ class LocalDatabaseManager:
                     pass_fail VARCHAR(10),
                     test_notes TEXT,
                     
+                    -- Advanced features
+                    auto_pass_fail BOOLEAN DEFAULT 0,
+                    compliance_score DECIMAL(5,2),
+                    corrective_actions TEXT,
+                    
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             """)
 
+            # Equipment and Calibration
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS equipment (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    equipment_code VARCHAR(50) UNIQUE NOT NULL,
+                    equipment_name VARCHAR(100) NOT NULL,
+                    equipment_type VARCHAR(50) NOT NULL,
+                    manufacturer VARCHAR(100),
+                    model VARCHAR(100),
+                    last_calibration_date DATE,
+                    calibration_due_date DATE,
+                    calibration_interval_days INTEGER DEFAULT 365,
+                    calibration_status VARCHAR(20) DEFAULT 'valid',
+                    is_active BOOLEAN DEFAULT 1,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            
             # Energy Consumption
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS energy_consumption (
@@ -409,6 +437,9 @@ class LocalDatabaseManager:
             self.insert_record('iso_standards', standard)
         
         logger.info(f"Seeded {len(iso_standards)} ISO standards")
+        
+        # Seed equipment data
+        self.seed_equipment_data()
 
         # Seed environmental KPIs
         kpi_targets = [
@@ -445,3 +476,95 @@ class LocalDatabaseManager:
             self.insert_record('environmental_kpis', kpi)
         
         logger.info(f"Seeded {len(kpi_targets)} environmental KPIs")
+        
+    def seed_equipment_data(self):
+        """Seed equipment data for calibration tracking"""
+        equipment_list = [
+            {
+                'equipment_code': 'digital_caliper_001',
+                'equipment_name': 'Pied à Coulisse Digital #001',
+                'equipment_type': 'dimensional_measurement',
+                'manufacturer': 'Mitutoyo',
+                'model': 'CD-15DCX',
+                'last_calibration_date': '2024-12-15',
+                'calibration_due_date': '2025-12-15',
+                'calibration_interval_days': 365,
+                'calibration_status': 'valid'
+            },
+            {
+                'equipment_code': 'universal_tester_002',
+                'equipment_name': 'Machine d\'Essai Universelle #002',
+                'equipment_type': 'mechanical_testing',
+                'manufacturer': 'Zwick Roell',
+                'model': 'Z050',
+                'last_calibration_date': '2024-11-20',
+                'calibration_due_date': '2025-11-20',
+                'calibration_interval_days': 365,
+                'calibration_status': 'expires_soon'
+            },
+            {
+                'equipment_code': 'absorption_tester_003',
+                'equipment_name': 'Testeur d\'Absorption #003',
+                'equipment_type': 'water_absorption',
+                'manufacturer': 'Controls Group',
+                'model': 'WA-3000',
+                'last_calibration_date': '2024-10-10',
+                'calibration_due_date': '2025-10-10',
+                'calibration_interval_days': 365,
+                'calibration_status': 'expired'
+            },
+            {
+                'equipment_code': 'pei_tester_004',
+                'equipment_name': 'Testeur PEI #004',
+                'equipment_type': 'abrasion_testing',
+                'manufacturer': 'Erichsen',
+                'model': 'PEI-450',
+                'last_calibration_date': '2024-12-01',
+                'calibration_due_date': '2025-12-01',
+                'calibration_interval_days': 365,
+                'calibration_status': 'valid'
+            }
+        ]
+        
+        # Check if equipment already exists
+        existing_equipment = self.execute_query("SELECT COUNT(*) as count FROM equipment")
+        if not existing_equipment or existing_equipment[0]['count'] == 0:
+            for equipment in equipment_list:
+                self.insert_record('equipment', equipment)
+            logger.info(f"Seeded {len(equipment_list)} equipment records")
+    
+    def update_equipment_calibration_status(self):
+        """Update equipment calibration status based on due dates"""
+        from datetime import datetime, timedelta
+        
+        today = datetime.now().date()
+        warning_threshold = timedelta(days=30)  # Warn 30 days before expiry
+        
+        # Get all equipment
+        equipment = self.execute_query("SELECT * FROM equipment WHERE is_active = 1")
+        
+        for item in equipment:
+            if item['calibration_due_date']:
+                due_date = datetime.strptime(item['calibration_due_date'], '%Y-%m-%d').date()
+                
+                if due_date < today:
+                    new_status = 'expired'
+                elif due_date <= today + warning_threshold:
+                    new_status = 'expires_soon'
+                else:
+                    new_status = 'valid'
+                
+                if new_status != item['calibration_status']:
+                    self.execute_single(
+                        "UPDATE equipment SET calibration_status = ? WHERE id = ?",
+                        (new_status, item['id'])
+                    )
+        
+        logger.info("Equipment calibration status updated")
+    
+    def get_equipment_by_code(self, equipment_code: str):
+        """Get equipment information by code"""
+        return self.execute_single(
+            "SELECT * FROM equipment WHERE equipment_code = ? AND is_active = 1",
+            (equipment_code,)
+        )
