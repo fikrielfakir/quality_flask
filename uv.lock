@@ -336,6 +336,7 @@ dependencies = [
     { name = "psycopg2-binary" },
     { name = "pyinstaller" },
     { name = "python-dotenv" },
+    { name = "werkzeug" },
 ]
 
 [package.metadata]
@@ -346,6 +347,7 @@ requires-dist = [
     { name = "psycopg2-binary", specifier = ">=2.9.10" },
     { name = "pyinstaller", specifier = ">=6.15.0" },
     { name = "python-dotenv", specifier = ">=1.1.1" },
+    { name = "werkzeug", specifier = ">=3.1.3" },
 ]
 
 [[package]]
