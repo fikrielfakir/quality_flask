@@ -1,0 +1,335 @@
+{% extends "base.html" %}
+
+{% block title %}Waste Management - Dersa EcoQuality{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="h3 mb-4">
+            <i class="fas fa-recycle text-success"></i> 
+            Waste Management & Recycling
+        </h1>
+    </div>
+</div>
+
+<!-- Waste Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Total Waste</h5>
+                        <h2 class="mb-0">{{ "%.1f"|format(waste_summary.total_waste or 0) }}</h2>
+                        <small>kg this month</small>
+                    </div>
+                    <i class="fas fa-trash fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Recycling Rate</h5>
+                        <h2 class="mb-0">{{ "%.1f"|format(waste_summary.avg_recycling_rate or 0) }}%</h2>
+                        <small>Average rate</small>
+                    </div>
+                    <i class="fas fa-recycle fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Valorization</h5>
+                        <h2 class="mb-0">{{ "%.0f"|format(waste_summary.total_valorization or 0) }}</h2>
+                        <small>MAD recovered</small>
+                    </div>
+                    <i class="fas fa-coins fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Disposal Cost</h5>
+                        <h2 class="mb-0">{{ "%.0f"|format(waste_summary.total_cost or 0) }}</h2>
+                        <small>MAD this month</small>
+                    </div>
+                    <i class="fas fa-money-bill fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Record Waste -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-plus"></i> Record Waste Data
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('waste') }}">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="waste_type" class="form-label">Waste Type *</label>
+                                <select class="form-select" id="waste_type" name="waste_type" required>
+                                    <option value="">Select Waste Type</option>
+                                    <option value="ceramic_scraps">Ceramic Scraps</option>
+                                    <option value="broken_tiles">Broken Tiles</option>
+                                    <option value="glaze_waste">Glaze Waste</option>
+                                    <option value="liquid_waste">Liquid Waste</option>
+                                    <option value="packaging">Packaging Materials</option>
+                                    <option value="raw_materials">Raw Material Waste</option>
+                                    <option value="dust_particles">Dust & Particles</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="quantity_kg" class="form-label">Quantity (kg) *</label>
+                                <input type="number" step="0.01" class="form-control" id="quantity_kg" name="quantity_kg" required>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="source_department" class="form-label">Source Department</label>
+                                <select class="form-select" id="source_department" name="source_department">
+                                    <option value="">Select Department</option>
+                                    <option value="production">Production</option>
+                                    <option value="glazing">Glazing</option>
+                                    <option value="firing">Firing</option>
+                                    <option value="quality_control">Quality Control</option>
+                                    <option value="packaging">Packaging</option>
+                                    <option value="maintenance">Maintenance</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="disposal_method" class="form-label">Disposal Method</label>
+                                <select class="form-select" id="disposal_method" name="disposal_method">
+                                    <option value="">Select Method</option>
+                                    <option value="recycling">Recycling</option>
+                                    <option value="reuse">Reuse in Production</option>
+                                    <option value="landfill">Landfill</option>
+                                    <option value="incineration">Incineration</option>
+                                    <option value="hazardous_disposal">Hazardous Waste Disposal</option>
+                                    <option value="composting">Composting</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="recycling_percentage" class="form-label">Recycling Rate (%)</label>
+                                <input type="number" step="0.01" max="100" class="form-control" id="recycling_percentage" name="recycling_percentage">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="valorization_amount" class="form-label">Valorization (MAD)</label>
+                                <input type="number" step="0.01" class="form-control" id="valorization_amount" name="valorization_amount">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="cost_amount" class="form-label">Disposal Cost (MAD)</label>
+                                <input type="number" step="0.01" class="form-control" id="cost_amount" name="cost_amount">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="destination" class="form-label">Destination</label>
+                                <input type="text" class="form-control" id="destination" name="destination" placeholder="e.g., Recycling Center Tétouan">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="certificate_number" class="form-label">Certificate Number</label>
+                                <input type="text" class="form-control" id="certificate_number" name="certificate_number">
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label for="notes" class="form-label">Notes</label>
+                                <input type="text" class="form-control" id="notes" name="notes">
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Record Waste Data
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Waste Types Breakdown -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-pie"></i> Waste Types Breakdown
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Waste Type</th>
+                                <th>Quantity (kg)</th>
+                                <th>Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for breakdown in waste_breakdown %}
+                            <tr>
+                                <td>{{ breakdown.waste_type.replace('_', ' ').title() }}</td>
+                                <td>{{ "%.1f"|format(breakdown.total_quantity) }}</td>
+                                <td>
+                                    <div class="progress" style="height: 15px;">
+                                        <div class="progress-bar" style="width: {{ breakdown.percentage }}%">
+                                            {{ "%.1f"|format(breakdown.percentage) }}%
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">No data available</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-leaf"></i> Environmental Targets
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Liquid Waste Recycling</span>
+                        <span class="badge bg-success">100%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar bg-success" style="width: 100%"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Overall Recycling Rate</span>
+                        <span class="badge bg-info">{{ "%.1f"|format(waste_summary.avg_recycling_rate or 0) }}%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar bg-info" style="width: {{ waste_summary.avg_recycling_rate or 0 }}%"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Waste Reduction Target</span>
+                        <span class="badge bg-warning">15%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar bg-warning" style="width: 15%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Waste Records Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-list"></i> Waste Management Records
+                    <span class="badge bg-secondary ms-2">{{ waste_records|length }} records</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Waste Type</th>
+                                <th>Quantity</th>
+                                <th>Source</th>
+                                <th>Disposal Method</th>
+                                <th>Recycling Rate</th>
+                                <th>Valorization</th>
+                                <th>Cost</th>
+                                <th>Responsible</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in waste_records %}
+                            <tr>
+                                <td>{{ record.recorded_date }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'danger' if 'liquid' in record.waste_type else 'warning' if 'ceramic' in record.waste_type else 'info' if 'glaze' in record.waste_type else 'secondary' }}">
+                                        {{ record.waste_type.replace('_', ' ').title() }}
+                                    </span>
+                                </td>
+                                <td><strong>{{ record.quantity_kg }} kg</strong></td>
+                                <td>{{ record.source_department or '-' }}</td>
+                                <td>{{ record.disposal_method.replace('_', ' ').title() if record.disposal_method else '-' }}</td>
+                                <td>
+                                    {% if record.recycling_percentage %}
+                                        <span class="badge bg-{{ 'success' if record.recycling_percentage >= 80 else 'warning' if record.recycling_percentage >= 50 else 'danger' }}">
+                                            {{ record.recycling_percentage }}%
+                                        </span>
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>{{ record.valorization_amount or '-' }} MAD</td>
+                                <td>{{ record.cost_amount or '-' }} MAD</td>
+                                <td>{{ record.responsible_person_name or '-' }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="9" class="text-center text-muted py-4">
+                                    No waste records found. Add your first record above.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

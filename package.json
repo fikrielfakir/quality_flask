@@ -1,0 +1,1 @@
+{"name":"flask-app","version":"1.0.0","scripts":{"dev":"python3 run.py","start":"python3 run.py"}}

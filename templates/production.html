@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}Production Management - Dersa EcoQuality{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="h3 mb-4">
+            <i class="fas fa-cogs text-primary"></i> 
+            Production Batch Management
+        </h1>
+    </div>
+</div>
+
+<!-- Add New Batch -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-plus"></i> Create New Production Batch
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('production') }}">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="batch_number" class="form-label">Batch Number *</label>
+                                <input type="text" class="form-control" id="batch_number" name="batch_number" required>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="product_type" class="form-label">Product Type *</label>
+                                <select class="form-select" id="product_type" name="product_type" required>
+                                    <option value="">Select Product Type</option>
+                                    <option value="floor_tiles">Floor Tiles</option>
+                                    <option value="wall_tiles">Wall Tiles</option>
+                                    <option value="gres_cerame">Grès Cérame</option>
+                                    <option value="porcelain_tiles">Porcelain Tiles</option>
+                                    <option value="rectified_tiles">Rectified Tiles</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="mb-3">
+                                <label for="production_date" class="form-label">Production Date *</label>
+                                <input type="date" class="form-control" id="production_date" name="production_date" required>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="mb-3">
+                                <label for="planned_quantity" class="form-label">Planned Qty</label>
+                                <input type="number" class="form-control" id="planned_quantity" name="planned_quantity" required>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="mb-3">
+                                <label for="kiln_number" class="form-label">Kiln #</label>
+                                <input type="text" class="form-control" id="kiln_number" name="kiln_number">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="firing_temperature" class="form-label">Firing Temperature (°C)</label>
+                                <input type="number" step="0.01" class="form-control" id="firing_temperature" name="firing_temperature">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="firing_duration" class="form-label">Firing Duration</label>
+                                <input type="text" class="form-control" id="firing_duration" name="firing_duration" placeholder="e.g., 18 hours">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="notes" class="form-label">Notes</label>
+                                <input type="text" class="form-control" id="notes" name="notes">
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Create Batch
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="filter_status" class="form-label">Status</label>
+                        <select class="form-select" id="filter_status" name="status">
+                            <option value="">All Statuses</option>
+                            <option value="planned" {{ 'selected' if request.args.get('status') == 'planned' }}>Planned</option>
+                            <option value="in_progress" {{ 'selected' if request.args.get('status') == 'in_progress' }}>In Progress</option>
+                            <option value="completed" {{ 'selected' if request.args.get('status') == 'completed' }}>Completed</option>
+                            <option value="approved" {{ 'selected' if request.args.get('status') == 'approved' }}>Approved</option>
+                            <option value="rejected" {{ 'selected' if request.args.get('status') == 'rejected' }}>Rejected</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="filter_date_from" class="form-label">Date From</label>
+                        <input type="date" class="form-control" id="filter_date_from" name="date_from" value="{{ request.args.get('date_from', '') }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="filter_date_to" class="form-label">Date To</label>
+                        <input type="date" class="form-control" id="filter_date_to" name="date_to" value="{{ request.args.get('date_to', '') }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">&nbsp;</label>
+                        <div>
+                            <button type="submit" class="btn btn-outline-primary">
+                                <i class="fas fa-filter"></i> Filter
+                            </button>
+                            <a href="{{ url_for('production') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Clear
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Production Batches Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-list"></i> Production Batches
+                    <span class="badge bg-secondary ms-2">{{ batches|length }} batches</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Batch Number</th>
+                                <th>Product Type</th>
+                                <th>Production Date</th>
+                                <th>Quantity</th>
+                                <th>Kiln</th>
+                                <th>Temperature</th>
+                                <th>Status</th>
+                                <th>Supervisor</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for batch in batches %}
+                            <tr>
+                                <td>
+                                    <strong>{{ batch.batch_number }}</strong>
+                                </td>
+                                <td>{{ batch.product_type.replace('_', ' ').title() }}</td>
+                                <td>{{ batch.production_date }}</td>
+                                <td>
+                                    {{ batch.actual_quantity or batch.planned_quantity }}
+                                    {% if batch.actual_quantity and batch.planned_quantity %}
+                                        <small class="text-muted">/ {{ batch.planned_quantity }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>{{ batch.kiln_number or '-' }}</td>
+                                <td>{{ batch.firing_temperature or '-' }}°C</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if batch.status == 'approved' else 'primary' if batch.status == 'in_progress' else 'warning' if batch.status == 'completed' else 'danger' if batch.status == 'rejected' else 'secondary' }}">
+                                        {{ batch.status.replace('_', ' ').title() }}
+                                    </span>
+                                </td>
+                                <td>{{ batch.supervisor_name or '-' }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ url_for('quality_tests', batch_id=batch.id) }}" class="btn btn-outline-success" title="Quality Tests">
+                                            <i class="fas fa-check"></i>
+                                        </a>
+                                        <button class="btn btn-outline-primary" onclick="editBatch({{ batch.id }})" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="9" class="text-center text-muted py-4">
+                                    No production batches found. Create your first batch above.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Set today's date as default
+document.getElementById('production_date').value = new Date().toISOString().split('T')[0];
+
+function editBatch(batchId) {
+    alert('Edit functionality will be implemented in the next version.');
+}
+</script>
+{% endblock %}

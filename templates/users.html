@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block title %}User Management - Dersa EcoQuality{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="h3 mb-4">
+            <i class="fas fa-users text-primary"></i> 
+            User Management
+        </h1>
+    </div>
+</div>
+
+<!-- Add New User -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-user-plus"></i> Add New User
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('users') }}">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username *</label>
+                                <input type="text" class="form-control" id="username" name="username" required>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email *</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="full_name" class="form-label">Full Name *</label>
+                                <input type="text" class="form-control" id="full_name" name="full_name" required>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password *</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="role" class="form-label">Role *</label>
+                                <select class="form-select" id="role" name="role" required>
+                                    <option value="">Select Role</option>
+                                    <option value="admin">Administrator</option>
+                                    <option value="production_manager">Production Manager</option>
+                                    <option value="quality_technician">Quality Technician</option>
+                                    <option value="operator">Operator</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="department" class="form-label">Department</label>
+                                <select class="form-select" id="department" name="department">
+                                    <option value="">Select Department</option>
+                                    <option value="Management">Management</option>
+                                    <option value="Production">Production</option>
+                                    <option value="Quality Control">Quality Control</option>
+                                    <option value="Maintenance">Maintenance</option>
+                                    <option value="Energy & Environment">Energy & Environment</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="is_active" class="form-label">Status</label>
+                                <select class="form-select" id="is_active" name="is_active">
+                                    <option value="1">Active</option>
+                                    <option value="0">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Create User
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Users Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-list"></i> System Users
+                    <span class="badge bg-secondary ms-2">{{ users|length }} users</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>User</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Department</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Last Login</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>
+                                    <div>
+                                        <strong>{{ user.full_name }}</strong>
+                                        <br><small class="text-muted">{{ user.username }}</small>
+                                    </div>
+                                </td>
+                                <td>{{ user.email }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'danger' if user.role == 'admin' else 'primary' if user.role == 'production_manager' else 'success' if user.role == 'quality_technician' else 'secondary' }}">
+                                        {{ user.role.replace('_', ' ').title() }}
+                                    </span>
+                                </td>
+                                <td>{{ user.department or '-' }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if user.is_active else 'secondary' }}">
+                                        {{ 'Active' if user.is_active else 'Inactive' }}
+                                    </span>
+                                </td>
+                                <td>{{ user.created_at.split('T')[0] if user.created_at else '-' }}</td>
+                                <td>{{ user.last_login.split('T')[0] if user.last_login else 'Never' }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary" onclick="editUser({{ user.id }})" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger" onclick="toggleUser({{ user.id }}, {{ user.is_active }})" title="{{ 'Deactivate' if user.is_active else 'Activate' }}">
+                                            <i class="fas fa-{{ 'ban' if user.is_active else 'check' }}"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">
+                                    No users found.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Role Permissions Reference -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-shield-alt"></i> Role Permissions Reference
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <h6 class="text-danger">Administrator</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success"></i> Full system access</li>
+                            <li><i class="fas fa-check text-success"></i> User management</li>
+                            <li><i class="fas fa-check text-success"></i> System configuration</li>
+                            <li><i class="fas fa-check text-success"></i> All modules</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-3">
+                        <h6 class="text-primary">Production Manager</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success"></i> Production management</li>
+                            <li><i class="fas fa-check text-success"></i> Energy monitoring</li>
+                            <li><i class="fas fa-check text-success"></i> Waste management</li>
+                            <li><i class="fas fa-check text-success"></i> Dashboard access</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-3">
+                        <h6 class="text-success">Quality Technician</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success"></i> Quality control</li>
+                            <li><i class="fas fa-check text-success"></i> Testing & measurements</li>
+                            <li><i class="fas fa-check text-success"></i> ISO compliance</li>
+                            <li><i class="fas fa-check text-success"></i> Batch quality review</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-3">
+                        <h6 class="text-secondary">Operator</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success"></i> Data entry</li>
+                            <li><i class="fas fa-check text-success"></i> View production status</li>
+                            <li><i class="fas fa-check text-success"></i> Basic reporting</li>
+                            <li><i class="fas fa-times text-danger"></i> Limited access</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function editUser(userId) {
+    alert('Edit user functionality will be implemented in the next version.');
+}
+
+function toggleUser(userId, isActive) {
+    const action = isActive ? 'deactivate' : 'activate';
+    if (confirm(`Are you sure you want to ${action} this user?`)) {
+        alert(`User ${action} functionality will be implemented in the next version.`);
+    }
+}
+</script>
+{% endblock %}

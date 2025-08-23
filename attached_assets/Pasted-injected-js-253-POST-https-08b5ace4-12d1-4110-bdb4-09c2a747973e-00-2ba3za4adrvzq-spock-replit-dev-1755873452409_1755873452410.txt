@@ -1,0 +1,45 @@
+injected.js:253  POST https://08b5ace4-12d1-4110-bdb4-09c2a747973e-00-2ba3za4adrvzq.spock.replit.dev/api/auth/login 401 (Unauthorized)
+window.fetch @ Network.js:219
+apply @ injected.js:253
+request @ api.ts:7
+login @ api.ts:25
+signIn @ useAuth.tsx:66
+handleAuth @ AuthPage.tsx:27
+callCallback2 @ chunk-WERSD76P.js?v=b3fbe561:3674
+invokeGuardedCallbackDev @ chunk-WERSD76P.js?v=b3fbe561:3699
+invokeGuardedCallback @ chunk-WERSD76P.js?v=b3fbe561:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-WERSD76P.js?v=b3fbe561:3736
+executeDispatch @ chunk-WERSD76P.js?v=b3fbe561:7014
+processDispatchQueueItemsInOrder @ chunk-WERSD76P.js?v=b3fbe561:7034
+processDispatchQueue @ chunk-WERSD76P.js?v=b3fbe561:7043
+dispatchEventsForPlugins @ chunk-WERSD76P.js?v=b3fbe561:7051
+(anonymous) @ chunk-WERSD76P.js?v=b3fbe561:7174
+batchedUpdates$1 @ chunk-WERSD76P.js?v=b3fbe561:18913
+batchedUpdates @ chunk-WERSD76P.js?v=b3fbe561:3579
+dispatchEventForPluginEventSystem @ chunk-WERSD76P.js?v=b3fbe561:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-WERSD76P.js?v=b3fbe561:5478
+dispatchEvent @ chunk-WERSD76P.js?v=b3fbe561:5472
+dispatchDiscreteEvent @ chunk-WERSD76P.js?v=b3fbe561:5449
+Console.js:61 Error signing in: Error: Invalid credentials
+    at ApiService.request (api.ts:17:13)
+    at async signIn (useAuth.tsx:66:24)
+    at async handleAuth (AuthPage.tsx:27:25)
+Mt.forEach.n.<computed> @ Console.js:61
+signIn @ useAuth.tsx:78
+await in signIn
+handleAuth @ AuthPage.tsx:27
+callCallback2 @ chunk-WERSD76P.js?v=b3fbe561:3674
+invokeGuardedCallbackDev @ chunk-WERSD76P.js?v=b3fbe561:3699
+invokeGuardedCallback @ chunk-WERSD76P.js?v=b3fbe561:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-WERSD76P.js?v=b3fbe561:3736
+executeDispatch @ chunk-WERSD76P.js?v=b3fbe561:7014
+processDispatchQueueItemsInOrder @ chunk-WERSD76P.js?v=b3fbe561:7034
+processDispatchQueue @ chunk-WERSD76P.js?v=b3fbe561:7043
+dispatchEventsForPlugins @ chunk-WERSD76P.js?v=b3fbe561:7051
+(anonymous) @ chunk-WERSD76P.js?v=b3fbe561:7174
+batchedUpdates$1 @ chunk-WERSD76P.js?v=b3fbe561:18913
+batchedUpdates @ chunk-WERSD76P.js?v=b3fbe561:3579
+dispatchEventForPluginEventSystem @ chunk-WERSD76P.js?v=b3fbe561:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-WERSD76P.js?v=b3fbe561:5478
+dispatchEvent @ chunk-WERSD76P.js?v=b3fbe561:5472
+dispatchDiscreteEvent @ chunk-WERSD76P.js?v=b3fbe561:5449

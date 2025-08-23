@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+
+{% block title %}Energy Management - Dersa EcoQuality{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="h3 mb-4">
+            <i class="fas fa-bolt text-warning"></i> 
+            Energy & Resources Monitoring
+        </h1>
+    </div>
+</div>
+
+<!-- Energy Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Total Consumption</h5>
+                        <h2 class="mb-0">{{ "%.1f"|format(energy_summary.total_consumption or 0) }}</h2>
+                        <small>kWh this month</small>
+                    </div>
+                    <i class="fas fa-bolt fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Efficiency</h5>
+                        <h2 class="mb-0">{{ "%.1f"|format(energy_summary.avg_efficiency or 0) }}%</h2>
+                        <small>Average efficiency</small>
+                    </div>
+                    <i class="fas fa-chart-line fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Total Cost</h5>
+                        <h2 class="mb-0">{{ "%.0f"|format(energy_summary.total_cost or 0) }}</h2>
+                        <small>MAD this month</small>
+                    </div>
+                    <i class="fas fa-coins fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Heat Recovery</h5>
+                        <h2 class="mb-0">{{ "%.0f"|format(heat_recovery_summary.total_heat_recovered or 0) }}</h2>
+                        <small>kWh recovered</small>
+                    </div>
+                    <i class="fas fa-fire fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Record Energy Consumption -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-plus"></i> Record Energy Consumption
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('energy') }}">
+                    <input type="hidden" name="form_type" value="energy_consumption">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="source" class="form-label">Energy Source *</label>
+                                <select class="form-select" id="source" name="source" required>
+                                    <option value="">Select Source</option>
+                                    <option value="electricity">Electricity</option>
+                                    <option value="natural_gas">Natural Gas</option>
+                                    <option value="solar">Solar Power</option>
+                                    <option value="biomass">Biomass</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="equipment_name" class="form-label">Equipment</label>
+                                <input type="text" class="form-control" id="equipment_name" name="equipment_name" placeholder="e.g., Kiln #1">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="department" class="form-label">Department</label>
+                                <select class="form-select" id="department" name="department">
+                                    <option value="">Select Department</option>
+                                    <option value="production">Production</option>
+                                    <option value="drying">Drying</option>
+                                    <option value="glazing">Glazing</option>
+                                    <option value="firing">Firing</option>
+                                    <option value="packaging">Packaging</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="consumption_kwh" class="form-label">Consumption (kWh) *</label>
+                                <input type="number" step="0.001" class="form-control" id="consumption_kwh" name="consumption_kwh" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="cost_amount" class="form-label">Cost (MAD)</label>
+                                <input type="number" step="0.01" class="form-control" id="cost_amount" name="cost_amount">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="meter_reading" class="form-label">Meter Reading</label>
+                                <input type="number" step="0.001" class="form-control" id="meter_reading" name="meter_reading">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="target_consumption" class="form-label">Target (kWh)</label>
+                                <input type="number" step="0.001" class="form-control" id="target_consumption" name="target_consumption">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="notes" class="form-label">Notes</label>
+                                <input type="text" class="form-control" id="notes" name="notes">
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-save"></i> Record Consumption
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Record Heat Recovery -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-fire"></i> Record Heat Recovery
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('energy') }}">
+                    <input type="hidden" name="form_type" value="heat_recovery">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="kiln_id" class="form-label">Kiln ID</label>
+                                <input type="text" class="form-control" id="kiln_id" name="kiln_id" placeholder="e.g., KILN-01">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="input_temperature" class="form-label">Input Temp (°C)</label>
+                                <input type="number" step="0.01" class="form-control" id="input_temperature" name="input_temperature">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="output_temperature" class="form-label">Output Temp (°C)</label>
+                                <input type="number" step="0.01" class="form-control" id="output_temperature" name="output_temperature">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="heat_recovered_kwh" class="form-label">Heat Recovered (kWh)</label>
+                                <input type="number" step="0.001" class="form-control" id="heat_recovered_kwh" name="heat_recovered_kwh">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="thermal_efficiency_percentage" class="form-label">Thermal Efficiency (%)</label>
+                                <input type="number" step="0.01" class="form-control" id="thermal_efficiency_percentage" name="thermal_efficiency_percentage">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="energy_savings_kwh" class="form-label">Energy Savings (kWh)</label>
+                                <input type="number" step="0.001" class="form-control" id="energy_savings_kwh" name="energy_savings_kwh">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="cost_savings" class="form-label">Cost Savings (MAD)</label>
+                                <input type="number" step="0.01" class="form-control" id="cost_savings" name="cost_savings">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="equipment_status" class="form-label">Equipment Status</label>
+                                <select class="form-select" id="equipment_status" name="equipment_status">
+                                    <option value="operational">Operational</option>
+                                    <option value="maintenance">Maintenance</option>
+                                    <option value="offline">Offline</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Record Heat Recovery
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Energy Consumption Records -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-list"></i> Energy Consumption Records
+                    <span class="badge bg-secondary ms-2">{{ consumption_records|length }} records</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date/Time</th>
+                                <th>Source</th>
+                                <th>Equipment</th>
+                                <th>Department</th>
+                                <th>Consumption</th>
+                                <th>Efficiency</th>
+                                <th>Cost</th>
+                                <th>Recorded By</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in consumption_records %}
+                            <tr>
+                                <td>
+                                    {{ record.recorded_date }}<br>
+                                    <small class="text-muted">{{ record.recorded_time or '' }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ 'warning' if record.source == 'electricity' else 'info' if record.source == 'natural_gas' else 'success' if record.source == 'solar' else 'secondary' }}">
+                                        {{ record.source.replace('_', ' ').title() }}
+                                    </span>
+                                </td>
+                                <td>{{ record.equipment_name or '-' }}</td>
+                                <td>{{ record.department or '-' }}</td>
+                                <td>
+                                    <strong>{{ record.consumption_kwh }} kWh</strong>
+                                    {% if record.target_consumption %}
+                                        <br><small class="text-muted">Target: {{ record.target_consumption }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if record.efficiency_percentage %}
+                                        <span class="badge bg-{{ 'success' if record.efficiency_percentage >= 85 else 'warning' if record.efficiency_percentage >= 70 else 'danger' }}">
+                                            {{ record.efficiency_percentage }}%
+                                        </span>
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>{{ record.cost_amount or '-' }} MAD</td>
+                                <td>{{ record.recorded_by_name or '-' }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">
+                                    No energy consumption records found. Add your first record above.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

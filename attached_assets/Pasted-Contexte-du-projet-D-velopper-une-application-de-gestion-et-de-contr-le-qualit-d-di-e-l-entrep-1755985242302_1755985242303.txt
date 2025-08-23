@@ -1,0 +1,133 @@
+Contexte du projet :
+Développer une application de gestion et de contrôle qualité dédiée à l’entreprise Ceramica Dersa, spécialisée dans la fabrication de carreaux en céramique à Tétouan, Maroc. Ce projet doit s’inscrire dans la logique du programme MED TEST de l’ONUDI, visant l’amélioration de l'efficacité énergétique, la gestion durable des ressources, la réduction des rejets, et l'intégration de normes environnementales (ISO 14001) et sociales (RSE).
+
+🛠 Objectif de l’application :
+Créer un système centralisé permettant de :
+
+Suivre la qualité de production en temps réel.
+
+Mesurer et optimiser les consommations énergétiques (électrique, thermique, gaz).
+
+Contrôler les émissions et la gestion des déchets (solides et liquides).
+
+Assurer la traçabilité des actions d’amélioration environnementale.
+
+Générer des rapports de conformité pour les normes ISO 9001 / ISO 14001 / RSE.
+
+Réaliser des analyses de performance énergétique et environnementale.
+
+🧩 Modules Fonctionnels à intégrer :
+1. 📊 Tableau de Bord (Dashboard)
+Indicateurs clés : consommation énergétique, taux de rejet, efficacité des fours, taux de recyclage.
+
+Statistiques en temps réel et historiques.
+
+2. ✅ Contrôle Qualité Produit
+Suivi des défauts : fissures, émail, dimensions.
+
+Système de notation et validation des lots de production.
+
+Génération automatique de fiches de non-conformité.
+
+3. 🔋 Suivi Énergie & Ressources
+Enregistrement des données : électricité, gaz, eau.
+
+Intégration avec des sous-compteurs pour mesure en temps réel.
+
+Alertes sur surconsommation et fuites détectées.
+
+4. 🔄 Gestion des Déchets & Recyclage
+Suivi de la collecte, tri, compactage et valorisation (carton, plastique, ferraille).
+
+Suivi des déchets industriels valorisables (alumine, émaux).
+
+Gestion des rejets liquides recyclés (volume, traitement, réutilisation).
+
+5. 🔥 Système de Récupération de Chaleur
+Calcul du rendement thermique des fours.
+
+Analyse de l’utilisation de l’énergie récupérée (four de séchage, broyeur pendulaire).
+
+Affichage des économies en MWh réalisées.
+
+6. 📁 Documents & Conformité
+Suivi des certifications ISO 9001, ISO 14001.
+
+Intégration de politiques RSE.
+
+Archivage des audits, bilans environnementaux, rapports MED TEST.
+
+7. 🧪 Tests & Mesures
+Intégration d’un module de gestion des campagnes de tests de qualité.
+
+Traçabilité des mesures, observations, remarques des techniciens.
+
+🖥 Spécifications Techniques Recommandées
+Backend : Node.js / Laravel
+
+Frontend : Vue.js / React.js
+
+Base de Données : PostgreSQL / MySQL
+
+Authentification : Rôles (Admin, Technicien Qualité, Responsable Production, Environnement, Maintenance)
+
+Exportation : PDF, Excel pour reporting
+
+IoT-ready : Prévoir intégration future avec capteurs de température, débit, énergie
+
+🌱 Objectifs RSE & Environnementaux à intégrer
+Réduction de 12 % de la consommation énergétique annuelle.
+
+Recyclage de 100 % des rejets liquides.
+
+Récupération de chaleur : 511 MWh/an.
+
+Valorisation de 100 % des déchets solides réutilisables.
+
+Respect des engagements environnementaux et sociaux (MED TEST, CGEM RSE).
+
+📝 Cas d’usage Exemple
+Un technicien qualité effectue un contrôle sur un lot de carreaux sortis du four de cuisson. Il note une déviation sur la température de cuisson. Il accède à l’application, entre les données, et génère une alerte vers le responsable de maintenance. L’équipe vérifie ensuite si la récupération de chaleur fonctionne correctement. Un rapport est automatiquement généré pour suivi mensuel.
+
+
+Quality Control Parameters (ISO Morocco Compliance) Dimensional Checks:
+Measure length, width, thickness (tolerance: ±0.5% per ISO 13006).
+
+Warping/bending limits (e.g., ≤0.6% for rectified tiles).
+
+Visual Defects:
+
+Catalog cracks, chips, color deviations, glaze defects (image upload for reference).
+
+Physical Tests:
+
+Water absorption (ISO 10545-3: ≤3% for gres cérame).
+
+Break resistance (ISO 10545-4: min. 1,300 N for floor tiles).
+
+Abrasion resistance (ISO 10545-7: PEI rating for wear class).
+
+Automated ISO Validation Preloaded IMANOR/ISO standards (e.g., ISO 13006 for ceramic tiles).
+Real-time alerts if a batch fails any parameter.
+
+Corrective action suggestions (e.g., adjust kiln temperature if warping exceeds limits).
+
+Reporting & Compliance Generate PDF/Excel reports per batch with:
+Pass/fail status, defect rates, photos of non-conformities.
+
+IMANOR compliance certificates (auto-filled for approved batches).
+
+Dashboard: Trends in defect types, production line performance.
+
+Localization & Units Languages: French & Arabic (primary for Morocco).
+Units: Metric (mm, °C, N).
+
+Offline Mode & Sync Work without internet in factories; sync data when connected.
+
+Hardware Integration Digital calipers (auto-import dimensions).
+
+Lab test equipment (e.g., water absorption scales).
+
+
+📌 Nom du Projet Suggesté :
+Dersa EcoQuality – Plateforme de contrôle qualité et de performance environnementale pour l'industrie céramique.

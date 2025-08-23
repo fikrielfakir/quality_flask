@@ -1,0 +1,338 @@
+{% extends "base.html" %}
+
+{% block title %}Quality Control - Dersa EcoQuality{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="h3 mb-4">
+            <i class="fas fa-check-circle text-success"></i> 
+            Quality Control & ISO Compliance
+        </h1>
+    </div>
+</div>
+
+<!-- ISO Standards Reference -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-certificate"></i> ISO Standards Reference
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Standard</th>
+                                <th>Parameter</th>
+                                <th>Min Value</th>
+                                <th>Max Value</th>
+                                <th>Unit</th>
+                                <th>Applicable Products</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for standard in iso_standards %}
+                            <tr>
+                                <td><strong>{{ standard.standard_code }}</strong></td>
+                                <td>{{ standard.parameter_name.replace('_', ' ').title() }}</td>
+                                <td>{{ standard.min_value or '-' }}</td>
+                                <td>{{ standard.max_value or '-' }}</td>
+                                <td>{{ standard.unit }}</td>
+                                <td>{{ standard.applicable_product_types.replace('_', ' ').replace(',', ', ').title() if standard.applicable_product_types else '-' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add New Quality Test -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-plus"></i> Record New Quality Test
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('quality') }}">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="batch_id" class="form-label">Production Batch *</label>
+                                <select class="form-select" id="batch_id" name="batch_id" required>
+                                    <option value="">Select Batch</option>
+                                    {% for batch in available_batches %}
+                                    <option value="{{ batch.id }}">{{ batch.batch_number }} - {{ batch.product_type }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="test_type" class="form-label">Test Type *</label>
+                                <select class="form-select" id="test_type" name="test_type" required>
+                                    <option value="">Select Test Type</option>
+                                    <option value="dimensional">Dimensional Testing</option>
+                                    <option value="water_absorption">Water Absorption</option>
+                                    <option value="breaking_strength">Breaking Strength</option>
+                                    <option value="abrasion_resistance">Abrasion Resistance</option>
+                                    <option value="visual_inspection">Visual Inspection</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="test_date" class="form-label">Test Date *</label>
+                                <input type="date" class="form-control" id="test_date" name="test_date" required>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="technician_id" class="form-label">Technician</label>
+                                <select class="form-select" id="technician_id" name="technician_id">
+                                    <option value="">Select Technician</option>
+                                    {% for user in technicians %}
+                                    <option value="{{ user.id }}">{{ user.full_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dimensional Measurements -->
+                    <div id="dimensional_fields" class="test-fields" style="display: none;">
+                        <h6 class="text-primary">Dimensional Measurements (ISO 13006)</h6>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="length_mm" class="form-label">Length (mm)</label>
+                                    <input type="number" step="0.01" class="form-control" id="length_mm" name="length_mm">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="width_mm" class="form-label">Width (mm)</label>
+                                    <input type="number" step="0.01" class="form-control" id="width_mm" name="width_mm">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="thickness_mm" class="form-label">Thickness (mm)</label>
+                                    <input type="number" step="0.01" class="form-control" id="thickness_mm" name="thickness_mm">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="warping_percentage" class="form-label">Warping (%)</label>
+                                    <input type="number" step="0.01" class="form-control" id="warping_percentage" name="warping_percentage">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Physical Properties -->
+                    <div id="physical_fields" class="test-fields" style="display: none;">
+                        <h6 class="text-primary">Physical Properties</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="water_absorption_percentage" class="form-label">Water Absorption (%)</label>
+                                    <input type="number" step="0.01" class="form-control" id="water_absorption_percentage" name="water_absorption_percentage">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="breaking_strength_n" class="form-label">Breaking Strength (N)</label>
+                                    <input type="number" class="form-control" id="breaking_strength_n" name="breaking_strength_n">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="abrasion_resistance_pei" class="form-label">Abrasion Resistance (PEI)</label>
+                                    <select class="form-select" id="abrasion_resistance_pei" name="abrasion_resistance_pei">
+                                        <option value="">Select PEI Rating</option>
+                                        <option value="1">PEI 1 - Light residential</option>
+                                        <option value="2">PEI 2 - Moderate residential</option>
+                                        <option value="3">PEI 3 - Heavy residential</option>
+                                        <option value="4">PEI 4 - Commercial</option>
+                                        <option value="5">PEI 5 - Heavy commercial</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Visual Inspection -->
+                    <div id="visual_fields" class="test-fields" style="display: none;">
+                        <h6 class="text-primary">Visual Inspection</h6>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="defect_type" class="form-label">Defect Type</label>
+                                    <select class="form-select" id="defect_type" name="defect_type">
+                                        <option value="none">No Defects</option>
+                                        <option value="crack">Crack</option>
+                                        <option value="chip">Chip</option>
+                                        <option value="glaze_defect">Glaze Defect</option>
+                                        <option value="color_variation">Color Variation</option>
+                                        <option value="surface_irregularity">Surface Irregularity</option>
+                                        <option value="size_variation">Size Variation</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="mb-3">
+                                    <label for="defect_count" class="form-label">Defect Count</label>
+                                    <input type="number" class="form-control" id="defect_count" name="defect_count" value="0">
+                                </div>
+                            </div>
+                            <div class="col-md-7">
+                                <div class="mb-3">
+                                    <label for="defect_description" class="form-label">Defect Description</label>
+                                    <input type="text" class="form-control" id="defect_description" name="defect_description">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label for="test_notes" class="form-label">Test Notes</label>
+                                <textarea class="form-control" id="test_notes" name="test_notes" rows="2"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Record Test Results
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quality Tests Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-list"></i> Quality Test Results
+                    <span class="badge bg-secondary ms-2">{{ tests|length }} tests</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Test Date</th>
+                                <th>Batch</th>
+                                <th>Test Type</th>
+                                <th>Key Results</th>
+                                <th>ISO Compliant</th>
+                                <th>Pass/Fail</th>
+                                <th>Technician</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for test in tests %}
+                            <tr>
+                                <td>{{ test.test_date }}</td>
+                                <td>
+                                    <strong>{{ test.batch_number }}</strong>
+                                    <br><small class="text-muted">{{ test.product_type }}</small>
+                                </td>
+                                <td>{{ test.test_type.replace('_', ' ').title() }}</td>
+                                <td>
+                                    {% if test.water_absorption_percentage %}
+                                        Water: {{ test.water_absorption_percentage }}%<br>
+                                    {% endif %}
+                                    {% if test.breaking_strength_n %}
+                                        Strength: {{ test.breaking_strength_n }}N<br>
+                                    {% endif %}
+                                    {% if test.warping_percentage %}
+                                        Warping: {{ test.warping_percentage }}%<br>
+                                    {% endif %}
+                                    {% if test.defect_count > 0 %}
+                                        Defects: {{ test.defect_count }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if test.iso_compliant is not none %}
+                                        <span class="badge bg-{{ 'success' if test.iso_compliant else 'danger' }}">
+                                            {{ 'Yes' if test.iso_compliant else 'No' }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if test.pass_fail %}
+                                        <span class="badge bg-{{ 'success' if test.pass_fail == 'PASS' else 'danger' }}">
+                                            {{ test.pass_fail }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ test.technician_name or '-' }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if test.status == 'completed' else 'warning' if test.status == 'in_progress' else 'secondary' }}">
+                                        {{ test.status.title() }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">
+                                    No quality tests recorded yet. Add your first test above.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Set today's date as default
+document.getElementById('test_date').value = new Date().toISOString().split('T')[0];
+
+// Show/hide test fields based on test type
+document.getElementById('test_type').addEventListener('change', function() {
+    const testType = this.value;
+    const allFields = document.querySelectorAll('.test-fields');
+    
+    // Hide all fields first
+    allFields.forEach(field => field.style.display = 'none');
+    
+    // Show relevant fields
+    if (testType === 'dimensional') {
+        document.getElementById('dimensional_fields').style.display = 'block';
+    } else if (testType === 'water_absorption' || testType === 'breaking_strength' || testType === 'abrasion_resistance') {
+        document.getElementById('physical_fields').style.display = 'block';
+    } else if (testType === 'visual_inspection') {
+        document.getElementById('visual_fields').style.display = 'block';
+    }
+});
+</script>
+{% endblock %}

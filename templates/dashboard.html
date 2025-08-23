@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Dersa EcoQuality{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="h3 mb-4">
+            <i class="fas fa-tachometer-alt text-primary"></i> 
+            Dashboard - Quality Management Overview
+        </h1>
+    </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Production Batches</h5>
+                        <h2 class="mb-0" id="total-batches">{{ kpis.production.total_batches or 0 }}</h2>
+                        <small>This month</small>
+                    </div>
+                    <i class="fas fa-boxes fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Quality Tests</h5>
+                        <h2 class="mb-0" id="total-tests">{{ kpis.quality.total_tests or 0 }}</h2>
+                        <small>Compliance: {{ "%.1f"|format(kpis.quality.compliance_rate or 0) }}%</small>
+                    </div>
+                    <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Energy Consumption</h5>
+                        <h2 class="mb-0" id="total-energy">{{ "%.1f"|format(kpis.energy.total_consumption or 0) }}</h2>
+                        <small>kWh this month</small>
+                    </div>
+                    <i class="fas fa-bolt fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Waste Management</h5>
+                        <h2 class="mb-0" id="total-waste">{{ "%.1f"|format(kpis.waste.total_waste or 0) }}</h2>
+                        <small>kg this month</small>
+                    </div>
+                    <i class="fas fa-recycle fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts and Tables -->
+<div class="row">
+    <!-- Recent Production Batches -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-cogs"></i> Recent Production Batches
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Batch #</th>
+                                <th>Product Type</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for batch in recent_batches %}
+                            <tr>
+                                <td>{{ batch.batch_number }}</td>
+                                <td>{{ batch.product_type }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if batch.status == 'approved' else 'warning' if batch.status == 'in_progress' else 'secondary' }}">
+                                        {{ batch.status.title() }}
+                                    </span>
+                                </td>
+                                <td>{{ batch.production_date }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">No recent batches</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('production') }}" class="btn btn-outline-primary btn-sm">
+                        View All Batches
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Quality Tests -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-check-circle"></i> Recent Quality Tests
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Batch</th>
+                                <th>Test Type</th>
+                                <th>Result</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for test in recent_tests %}
+                            <tr>
+                                <td>{{ test.batch_number }}</td>
+                                <td>{{ test.test_type }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if test.pass_fail == 'PASS' else 'danger' if test.pass_fail == 'FAIL' else 'warning' }}">
+                                        {{ test.pass_fail or 'Pending' }}
+                                    </span>
+                                </td>
+                                <td>{{ test.test_date }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">No recent tests</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('quality') }}" class="btn btn-outline-success btn-sm">
+                        View All Tests
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Environmental KPIs -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-leaf"></i> Environmental KPIs & Sustainability
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center p-3 border rounded">
+                            <i class="fas fa-percentage fa-2x text-success mb-2"></i>
+                            <h4 class="text-success">12%</h4>
+                            <p class="mb-0">Energy Reduction Target</p>
+                            <small class="text-muted">Annual target</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center p-3 border rounded">
+                            <i class="fas fa-recycle fa-2x text-info mb-2"></i>
+                            <h4 class="text-info">100%</h4>
+                            <p class="mb-0">Liquid Waste Recycling</p>
+                            <small class="text-muted">Target achieved</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center p-3 border rounded">
+                            <i class="fas fa-fire fa-2x text-warning mb-2"></i>
+                            <h4 class="text-warning">511</h4>
+                            <p class="mb-0">Heat Recovery (MWh)</p>
+                            <small class="text-muted">Annual target</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Auto-refresh dashboard every 30 seconds
+setInterval(function() {
+    // Refresh KPIs without full page reload
+    fetch('/api/dashboard/kpis')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('total-batches').textContent = data.production.total_batches || 0;
+            document.getElementById('total-tests').textContent = data.quality.total_tests || 0;
+            document.getElementById('total-energy').textContent = (data.energy.total_consumption || 0).toFixed(1);
+            document.getElementById('total-waste').textContent = (data.waste.total_waste || 0).toFixed(1);
+        })
+        .catch(error => console.log('KPI refresh failed:', error));
+}, 30000);
+</script>
+{% endblock %}
