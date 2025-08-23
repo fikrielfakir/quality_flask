@@ -1,0 +1,468 @@
+{% extends "base.html" %}
+
+{% block title %}Gestion Matières Premières - Dersa EcoQuality{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="h3 mb-4">
+            <i class="fas fa-boxes text-warning"></i> 
+            Gestion des Matières Premières & Fournisseurs
+        </h1>
+    </div>
+</div>
+
+<!-- Material Statistics Overview -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-bar"></i> Vue d'Ensemble des Matières Premières
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for stat in material_stats %}
+                    <div class="col-md-3 text-center">
+                        <div class="border rounded p-3">
+                            <h6 class="text-primary">{{ stat.material_type.replace('_', ' ').title() }}</h6>
+                            <div class="h4 text-success">{{ stat.count }} lots</div>
+                            <small class="text-muted">
+                                {{ "%.1f"|format(stat.total_quantity or 0) }} kg total<br>
+                                Coût moyen: {{ "%.2f"|format(stat.avg_cost or 0) }} DH/kg
+                            </small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add New Supplier Form -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-plus"></i> Ajouter un Nouveau Fournisseur
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('raw_materials') }}">
+                    <input type="hidden" name="form_type" value="supplier">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="supplier_code" class="form-label">Code Fournisseur *</label>
+                                <input type="text" class="form-control" id="supplier_code" name="supplier_code" required placeholder="FRIT001">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="supplier_name" class="form-label">Nom du Fournisseur *</label>
+                                <input type="text" class="form-control" id="supplier_name" name="supplier_name" required placeholder="Frittes Maghreb SARL">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="contact_person" class="form-label">Personne de Contact</label>
+                                <input type="text" class="form-control" id="contact_person" name="contact_person" placeholder="Ahmed Benali">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">Téléphone</label>
+                                <input type="tel" class="form-control" id="phone" name="phone" placeholder="+212 5 39 12 34 56">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" placeholder="contact@fournisseur.ma">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="region" class="form-label">Région</label>
+                                <select class="form-select" id="region" name="region">
+                                    <option value="">Sélectionner la Région</option>
+                                    <option value="Rabat-Salé-Kénitra">Rabat-Salé-Kénitra</option>
+                                    <option value="Tanger-Tétouan-Al Hoceima">Tanger-Tétouan-Al Hoceima</option>
+                                    <option value="Casablanca-Settat">Casablanca-Settat</option>
+                                    <option value="Fès-Meknès">Fès-Meknès</option>
+                                    <option value="Oriental">Oriental</option>
+                                    <option value="Marrakech-Safi">Marrakech-Safi</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="certification_status" class="form-label">Statut Certification</label>
+                                <select class="form-select" id="certification_status" name="certification_status">
+                                    <option value="pending">En Attente</option>
+                                    <option value="certified">Certifié</option>
+                                    <option value="expired">Expiré</option>
+                                    <option value="rejected">Rejeté</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="quality_rating" class="form-label">Note Qualité (1-5)</label>
+                                <input type="number" step="0.1" min="1" max="5" class="form-control" id="quality_rating" name="quality_rating" value="5.0">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label for="address" class="form-label">Adresse Complète</label>
+                                <textarea class="form-control" id="address" name="address" rows="2" placeholder="Zone Industrielle, Salé, Maroc"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Enregistrer Fournisseur
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add New Raw Material Form -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-plus"></i> Réception Nouvelle Matière Première
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('raw_materials') }}">
+                    <input type="hidden" name="form_type" value="material">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="material_code" class="form-label">Code Matière *</label>
+                                <input type="text" class="form-control" id="material_code" name="material_code" required placeholder="FRIT-BL-001">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="material_name" class="form-label">Nom de la Matière *</label>
+                                <input type="text" class="form-control" id="material_name" name="material_name" required placeholder="Fritte Blanche Base 600°C">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="material_type" class="form-label">Type de Matière *</label>
+                                <select class="form-select" id="material_type" name="material_type" required>
+                                    <option value="">Sélectionner le Type</option>
+                                    <option value="fritte">Fritte</option>
+                                    <option value="colorant">Colorant</option>
+                                    <option value="additif">Additif</option>
+                                    <option value="fritte_micronisee">Fritte Micronisée</option>
+                                    <option value="engobe">Engobe</option>
+                                    <option value="email">Email</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="supplier_id" class="form-label">Fournisseur *</label>
+                                <select class="form-select" id="supplier_id" name="supplier_id" required>
+                                    <option value="">Sélectionner le Fournisseur</option>
+                                    {% for supplier in suppliers %}
+                                    <option value="{{ supplier.id }}">{{ supplier.supplier_name }} ({{ supplier.supplier_code }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="lot_number" class="form-label">Numéro de Lot</label>
+                                <input type="text" class="form-control" id="lot_number" name="lot_number" placeholder="FB600-2025-001">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="quantity_kg" class="form-label">Quantité (kg) *</label>
+                                <input type="number" step="0.1" class="form-control" id="quantity_kg" name="quantity_kg" required>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="unit_cost" class="form-label">Coût Unitaire (DH/kg)</label>
+                                <input type="number" step="0.01" class="form-control" id="unit_cost" name="unit_cost">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="humidity_percentage" class="form-label">Humidité (%)</label>
+                                <input type="number" step="0.01" class="form-control" id="humidity_percentage" name="humidity_percentage">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="particle_size_microns" class="form-label">Taille Particules (μm)</label>
+                                <input type="number" step="0.1" class="form-control" id="particle_size_microns" name="particle_size_microns">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="storage_location" class="form-label">Emplacement Stockage</label>
+                                <input type="text" class="form-control" id="storage_location" name="storage_location" placeholder="Silo A1">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="expiry_date" class="form-label">Date d'Expiration</label>
+                                <input type="date" class="form-control" id="expiry_date" name="expiry_date">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label class="form-label">Statut Initial</label>
+                                <div class="form-control-plaintext">
+                                    <span class="badge bg-warning">En Attente d'Inspection</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="chemical_composition" class="form-label">Composition Chimique</label>
+                                <input type="text" class="form-control" id="chemical_composition" name="chemical_composition" placeholder="SiO2: 65%, Al2O3: 18%, Na2O: 12%">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="inspection_notes" class="form-label">Notes d'Inspection</label>
+                                <textarea class="form-control" id="inspection_notes" name="inspection_notes" rows="1" placeholder="Observations visuelles, conditions de réception..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Enregistrer Réception Matière Première
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Raw Materials Inventory Table -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-list"></i> Inventaire des Matières Premières
+                    <span class="badge bg-secondary ms-2">{{ materials|length }} lots</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Code Matière</th>
+                                <th>Nom & Type</th>
+                                <th>Fournisseur</th>
+                                <th>Quantité</th>
+                                <th>Qualité</th>
+                                <th>Statut</th>
+                                <th>Emplacement</th>
+                                <th>Réception</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for material in materials %}
+                            <tr>
+                                <td>
+                                    <strong>{{ material.material_code }}</strong>
+                                    <br><small class="text-muted">Lot: {{ material.lot_number or '-' }}</small>
+                                </td>
+                                <td>
+                                    <strong>{{ material.material_name }}</strong>
+                                    <br><span class="badge bg-info">{{ material.material_type.replace('_', ' ').title() }}</span>
+                                </td>
+                                <td>{{ material.supplier_name or '-' }}</td>
+                                <td>
+                                    <strong>{{ material.quantity_kg }} kg</strong>
+                                    {% if material.unit_cost %}
+                                    <br><small class="text-muted">{{ "%.2f"|format(material.unit_cost) }} DH/kg</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if material.humidity_percentage %}
+                                        Humidité: {{ material.humidity_percentage }}%<br>
+                                    {% endif %}
+                                    {% if material.particle_size_microns %}
+                                        Particules: {{ material.particle_size_microns }}μm<br>
+                                    {% endif %}
+                                    {% if material.chemical_composition %}
+                                        <small class="text-muted">{{ material.chemical_composition[:30] }}{% if material.chemical_composition|length > 30 %}...{% endif %}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% set status_colors = {'conforme': 'success', 'non_conforme': 'danger', 'en_attente': 'warning'} %}
+                                    <span class="badge bg-{{ status_colors.get(material.status, 'secondary') }}">
+                                        {{ material.status.replace('_', ' ').title() }}
+                                    </span>
+                                </td>
+                                <td>{{ material.storage_location or '-' }}</td>
+                                <td>
+                                    {{ material.reception_date }}
+                                    {% if material.inspected_by_name %}
+                                    <br><small class="text-muted">Par: {{ material.inspected_by_name }}</small>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">
+                                    Aucune matière première enregistrée. Ajoutez votre première réception ci-dessus.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Suppliers List -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-truck"></i> Liste des Fournisseurs
+                    <span class="badge bg-secondary ms-2">{{ suppliers|length }} fournisseurs</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Code</th>
+                                <th>Fournisseur</th>
+                                <th>Contact</th>
+                                <th>Région</th>
+                                <th>Certification</th>
+                                <th>Note Qualité</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for supplier in suppliers %}
+                            <tr>
+                                <td><strong>{{ supplier.supplier_code }}</strong></td>
+                                <td>
+                                    <strong>{{ supplier.supplier_name }}</strong>
+                                    {% if supplier.address %}
+                                    <br><small class="text-muted">{{ supplier.address }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if supplier.contact_person %}
+                                        {{ supplier.contact_person }}<br>
+                                    {% endif %}
+                                    {% if supplier.phone %}
+                                        <i class="fas fa-phone"></i> {{ supplier.phone }}<br>
+                                    {% endif %}
+                                    {% if supplier.email %}
+                                        <i class="fas fa-envelope"></i> {{ supplier.email }}
+                                    {% endif %}
+                                </td>
+                                <td>{{ supplier.region or '-' }}</td>
+                                <td>
+                                    {% set cert_colors = {'certified': 'success', 'pending': 'warning', 'expired': 'danger', 'rejected': 'dark'} %}
+                                    <span class="badge bg-{{ cert_colors.get(supplier.certification_status, 'secondary') }}">
+                                        {{ supplier.certification_status.replace('_', ' ').title() }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <span class="me-2">{{ supplier.quality_rating }}/5</span>
+                                        <div class="progress" style="width: 60px; height: 8px;">
+                                            <div class="progress-bar bg-success" style="width: {{ (supplier.quality_rating / 5 * 100)|round }}%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    Aucun fournisseur enregistré. Ajoutez votre premier fournisseur ci-dessus.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Auto-generate material code based on type and supplier
+document.getElementById('material_type').addEventListener('change', function() {
+    const type = this.value;
+    const supplier = document.getElementById('supplier_id');
+    const codeField = document.getElementById('material_code');
+    
+    if (type && supplier.value) {
+        // Get supplier code from selected option text
+        const supplierText = supplier.options[supplier.selectedIndex].text;
+        const supplierCode = supplierText.split('(')[1]?.split(')')[0] || 'SUP';
+        
+        // Generate code: TYPE-SUPPLIER-XXX
+        const typeCode = type.substring(0, 4).toUpperCase();
+        const date = new Date();
+        const sequential = String(date.getFullYear()).substring(2) + String(date.getMonth() + 1).padStart(2, '0') + String(date.getDate()).padStart(2, '0');
+        
+        codeField.value = `${typeCode}-${supplierCode}-${sequential}`;
+    }
+});
+
+document.getElementById('supplier_id').addEventListener('change', function() {
+    const materialType = document.getElementById('material_type');
+    if (materialType.value) {
+        materialType.dispatchEvent(new Event('change'));
+    }
+});
+
+// Validate expiry date
+document.getElementById('expiry_date').addEventListener('change', function() {
+    const today = new Date();
+    const selected = new Date(this.value);
+    
+    if (selected <= today) {
+        alert('ATTENTION: La date d\'expiration est dans le passé ou aujourd\'hui!');
+        this.style.borderColor = '#dc3545';
+    } else {
+        this.style.borderColor = '';
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,380 @@
+{% extends "base.html" %}
+
+{% block title %}Préparation Poudres - Dersa EcoQuality{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="h3 mb-4">
+            <i class="fas fa-industry text-info"></i> 
+            Préparation des Poudres & Gestion des Silos
+        </h1>
+    </div>
+</div>
+
+<!-- Humidity Alerts -->
+{% if humidity_alerts %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <h5 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> Alertes Humidité</h5>
+            <ul class="mb-0">
+                {% for alert in humidity_alerts %}
+                <li>{{ alert }}</li>
+                {% endfor %}
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Silo Statistics Overview -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-primary">Total Silos</h5>
+                <h2 class="text-success">{{ silo_stats.total_silos or 0 }}</h2>
+                <small class="text-muted">Silos Installés</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-primary">Capacité Totale</h5>
+                <h2 class="text-info">{{ "%.1f"|format(silo_stats.total_capacity or 0) }}</h2>
+                <small class="text-muted">kg</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-primary">Contenu Actuel</h5>
+                <h2 class="text-warning">{{ "%.1f"|format(silo_stats.total_content or 0) }}</h2>
+                <small class="text-muted">kg ({{ "%.1f"|format((silo_stats.total_content / silo_stats.total_capacity * 100) if silo_stats.total_capacity else 0) }}%)</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-primary">Humidité Moyenne</h5>
+                <h2 class="text-success">{{ "%.1f"|format(silo_stats.avg_humidity or 0) }}%</h2>
+                <small class="text-muted">Taux Moyen</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add New Silo Form -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-plus"></i> Ajouter un Nouveau Silo
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('powder_preparation') }}">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="silo_code" class="form-label">Code Silo *</label>
+                                <input type="text" class="form-control" id="silo_code" name="silo_code" required placeholder="SILO-A1">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="silo_name" class="form-label">Nom du Silo *</label>
+                                <input type="text" class="form-control" id="silo_name" name="silo_name" required placeholder="Silo Fritte Principale A1">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="capacity_kg" class="form-label">Capacité (kg) *</label>
+                                <input type="number" step="0.1" class="form-control" id="capacity_kg" name="capacity_kg" required>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="current_level_kg" class="form-label">Niveau Actuel (kg)</label>
+                                <input type="number" step="0.1" class="form-control" id="current_level_kg" name="current_level_kg">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="material_type" class="form-label">Type de Matière</label>
+                                <select class="form-select" id="material_type" name="material_type">
+                                    <option value="">Sélectionner le Type</option>
+                                    <option value="fritte">Fritte</option>
+                                    <option value="colorant">Colorant</option>
+                                    <option value="additif">Additif</option>
+                                    <option value="fritte_micronisee">Fritte Micronisée</option>
+                                    <option value="recyclage">Matière Recyclée</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="humidity_sensor_id" class="form-label">ID Capteur Humidité</label>
+                                <input type="text" class="form-control" id="humidity_sensor_id" name="humidity_sensor_id" placeholder="HS-A1-001">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="target_humidity_min" class="form-label">Humidité Min (%)</label>
+                                <input type="number" step="0.1" class="form-control" id="target_humidity_min" name="target_humidity_min">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="target_humidity_max" class="form-label">Humidité Max (%)</label>
+                                <input type="number" step="0.1" class="form-control" id="target_humidity_max" name="target_humidity_max">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="current_humidity" class="form-label">Humidité Actuelle (%)</label>
+                                <input type="number" step="0.1" class="form-control" id="current_humidity" name="current_humidity">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="location" class="form-label">Emplacement</label>
+                                <input type="text" class="form-control" id="location" name="location" placeholder="Zone A - Production">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="status" class="form-label">Statut</label>
+                                <select class="form-select" id="status" name="status">
+                                    <option value="active">Actif</option>
+                                    <option value="maintenance">Maintenance</option>
+                                    <option value="inactive">Inactif</option>
+                                    <option value="cleaning">Nettoyage</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-save"></i> Ajouter Silo
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Silos Management Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-list"></i> État des Silos en Temps Réel
+                    <span class="badge bg-secondary ms-2">{{ silos|length }} silos</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Code Silo</th>
+                                <th>Nom & Type</th>
+                                <th>Capacité</th>
+                                <th>Niveau Actuel</th>
+                                <th>Humidité</th>
+                                <th>Capteur</th>
+                                <th>Statut</th>
+                                <th>Emplacement</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for silo in silos %}
+                            <tr>
+                                <td><strong>{{ silo.silo_code }}</strong></td>
+                                <td>
+                                    <strong>{{ silo.silo_name }}</strong>
+                                    {% if silo.material_type %}
+                                    <br><span class="badge bg-info">{{ silo.material_type.replace('_', ' ').title() }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>{{ silo.capacity_kg }} kg</strong>
+                                    <div class="progress mt-1" style="height: 6px;">
+                                        <div class="progress-bar bg-info" style="width: 100%"></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <strong>{{ silo.current_level_kg or 0 }} kg</strong>
+                                    {% set fill_percentage = ((silo.current_level_kg / silo.capacity_kg * 100) if silo.capacity_kg else 0) %}
+                                    <div class="progress mt-1" style="height: 6px;">
+                                        <div class="progress-bar {% if fill_percentage > 80 %}bg-danger{% elif fill_percentage > 60 %}bg-warning{% else %}bg-success{% endif %}" 
+                                             style="width: {{ fill_percentage }}%"></div>
+                                    </div>
+                                    <small class="text-muted">{{ "%.1f"|format(fill_percentage) }}% rempli</small>
+                                </td>
+                                <td>
+                                    {% if silo.current_humidity %}
+                                    <strong>{{ silo.current_humidity }}%</strong>
+                                    <br>
+                                    {% if silo.target_humidity_min and silo.target_humidity_max %}
+                                        {% if silo.current_humidity < silo.target_humidity_min %}
+                                            <span class="badge bg-danger">Trop Faible</span>
+                                        {% elif silo.current_humidity > silo.target_humidity_max %}
+                                            <span class="badge bg-danger">Trop Élevée</span>
+                                        {% else %}
+                                            <span class="badge bg-success">OK</span>
+                                        {% endif %}
+                                        <br><small class="text-muted">Cible: {{ silo.target_humidity_min }}-{{ silo.target_humidity_max }}%</small>
+                                    {% endif %}
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if silo.humidity_sensor_id %}
+                                    <i class="fas fa-thermometer-half text-success"></i> {{ silo.humidity_sensor_id }}
+                                    {% else %}
+                                    <span class="text-muted">Non configuré</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% set status_colors = {'active': 'success', 'maintenance': 'warning', 'inactive': 'secondary', 'cleaning': 'info'} %}
+                                    <span class="badge bg-{{ status_colors.get(silo.status, 'secondary') }}">
+                                        {{ silo.status.replace('_', ' ').title() }}
+                                    </span>
+                                </td>
+                                <td>{{ silo.location or '-' }}</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="updateSiloLevel('{{ silo.id }}', '{{ silo.silo_code }}')">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-info" onclick="checkHumidity('{{ silo.id }}', '{{ silo.silo_code }}')">
+                                            <i class="fas fa-thermometer-half"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="9" class="text-center text-muted py-4">
+                                    Aucun silo configuré. Ajoutez votre premier silo ci-dessus.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Work Instructions Modal -->
+<div class="modal fade" id="workInstructionsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Instructions de Travail - Silo <span id="modalSiloCode"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle"></i> Procédure de Contrôle Humidité</h6>
+                    <ol>
+                        <li>Vérifier le fonctionnement du capteur d'humidité</li>
+                        <li>Prendre 3 mesures à 10 minutes d'intervalle</li>
+                        <li>Si hors tolérance: activer le système de déshumidification/humidification</li>
+                        <li>Enregistrer les mesures dans le système</li>
+                        <li>Alerter le superviseur si problème persistant</li>
+                    </ol>
+                </div>
+                <div class="alert alert-warning">
+                    <h6><i class="fas fa-exclamation-triangle"></i> Conditions de Stockage</h6>
+                    <ul>
+                        <li>Température ambiante: 18-25°C</li>
+                        <li>Humidité relative: selon type de matière</li>
+                        <li>Ventilation: Assurer circulation d'air</li>
+                        <li>Protection: Éviter contamination croisée</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                <button type="button" class="btn btn-primary" onclick="markInstructionRead()">Instructions Lues</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Validate humidity ranges
+document.getElementById('target_humidity_min').addEventListener('change', function() {
+    const max = document.getElementById('target_humidity_max');
+    if (max.value && parseFloat(this.value) >= parseFloat(max.value)) {
+        alert('L\'humidité minimale doit être inférieure à l\'humidité maximale');
+        this.focus();
+    }
+});
+
+document.getElementById('target_humidity_max').addEventListener('change', function() {
+    const min = document.getElementById('target_humidity_min');
+    if (min.value && parseFloat(this.value) <= parseFloat(min.value)) {
+        alert('L\'humidité maximale doit être supérieure à l\'humidité minimale');
+        this.focus();
+    }
+});
+
+// Validate current level vs capacity
+document.getElementById('current_level_kg').addEventListener('change', function() {
+    const capacity = document.getElementById('capacity_kg').value;
+    if (capacity && parseFloat(this.value) > parseFloat(capacity)) {
+        alert('Le niveau actuel ne peut pas dépasser la capacité du silo');
+        this.focus();
+    }
+});
+
+// Functions for silo management
+function updateSiloLevel(siloId, siloCode) {
+    const newLevel = prompt(`Nouveau niveau pour le silo ${siloCode} (kg):`);
+    if (newLevel && !isNaN(newLevel)) {
+        // Here you would make an AJAX call to update the silo level
+        alert(`Niveau du silo ${siloCode} mis à jour: ${newLevel} kg`);
+        location.reload(); // Reload to see changes
+    }
+}
+
+function checkHumidity(siloId, siloCode) {
+    document.getElementById('modalSiloCode').textContent = siloCode;
+    new bootstrap.Modal(document.getElementById('workInstructionsModal')).show();
+}
+
+function markInstructionRead() {
+    alert('Instructions marquées comme lues. N\'oubliez pas d\'enregistrer vos mesures.');
+    bootstrap.Modal.getInstance(document.getElementById('workInstructionsModal')).hide();
+}
+
+// Auto-refresh humidity data every 30 seconds
+setInterval(function() {
+    // In a real application, this would fetch updated humidity data via AJAX
+    console.log('Checking for updated humidity readings...');
+}, 30000);
+</script>
+{% endblock %}

@@ -292,12 +292,171 @@ class LocalDatabaseManager:
                 )
             """)
 
+            # Raw Material Management Tables
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS suppliers (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    supplier_code VARCHAR(20) UNIQUE NOT NULL,
+                    supplier_name VARCHAR(255) NOT NULL,
+                    contact_person VARCHAR(255),
+                    phone VARCHAR(50),
+                    email VARCHAR(255),
+                    address TEXT,
+                    region VARCHAR(100),
+                    certification_status VARCHAR(50) DEFAULT 'pending',
+                    quality_rating DECIMAL(3,2) DEFAULT 5.0,
+                    is_active BOOLEAN DEFAULT 1,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS raw_materials (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    material_code VARCHAR(50) UNIQUE NOT NULL,
+                    material_name VARCHAR(255) NOT NULL,
+                    material_type VARCHAR(50) NOT NULL,
+                    supplier_id INTEGER REFERENCES suppliers(id),
+                    reception_date DATE DEFAULT (date('now')),
+                    lot_number VARCHAR(100),
+                    quantity_kg DECIMAL(10,2) NOT NULL,
+                    unit_cost DECIMAL(10,2),
+                    status VARCHAR(20) DEFAULT 'en_attente',
+                    humidity_percentage DECIMAL(5,2),
+                    particle_size_microns DECIMAL(8,2),
+                    chemical_composition TEXT,
+                    inspection_notes TEXT,
+                    storage_location VARCHAR(100),
+                    expiry_date DATE,
+                    inspected_by INTEGER REFERENCES users(id),
+                    approved_by INTEGER REFERENCES users(id),
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+
+            # Silo Inventory Management
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS silos (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    silo_code VARCHAR(20) UNIQUE NOT NULL,
+                    silo_name VARCHAR(100) NOT NULL,
+                    capacity_kg DECIMAL(10,2) NOT NULL,
+                    current_level_kg DECIMAL(10,2) DEFAULT 0,
+                    material_type VARCHAR(50),
+                    humidity_sensor_id VARCHAR(50),
+                    target_humidity_min DECIMAL(5,2),
+                    target_humidity_max DECIMAL(5,2),
+                    current_humidity DECIMAL(5,2),
+                    last_humidity_check TIMESTAMP,
+                    status VARCHAR(20) DEFAULT 'active',
+                    location VARCHAR(100),
+                    is_active BOOLEAN DEFAULT 1,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+
+            # Glaze and Engobe Tank Management
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS glaze_tanks (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    tank_code VARCHAR(20) UNIQUE NOT NULL,
+                    tank_name VARCHAR(100) NOT NULL,
+                    tank_type VARCHAR(50) NOT NULL,
+                    capacity_liters DECIMAL(8,2) NOT NULL,
+                    current_level_liters DECIMAL(8,2) DEFAULT 0,
+                    material_batch_code VARCHAR(100),
+                    viscosity_cps DECIMAL(8,2),
+                    density_gcm3 DECIMAL(6,3),
+                    refusal_rate_percentage DECIMAL(5,2),
+                    temperature_celsius DECIMAL(5,2),
+                    ph_level DECIMAL(4,2),
+                    preparation_date DATE,
+                    expiry_date DATE,
+                    status VARCHAR(20) DEFAULT 'active',
+                    quality_approved BOOLEAN DEFAULT 0,
+                    approved_by INTEGER REFERENCES users(id),
+                    notes TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+
+            # Enhanced Testing for Complete ISO 13006:2018 Compliance
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS advanced_quality_tests (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    batch_id INTEGER REFERENCES production_batches(id) NOT NULL,
+                    test_date DATE DEFAULT (date('now')),
+                    technician_id INTEGER REFERENCES users(id),
+                    test_standard VARCHAR(50) NOT NULL,
+                    
+                    -- Chemical Properties (ISO 10545 series)
+                    stain_resistance_class INTEGER,
+                    acid_resistance_class VARCHAR(10),
+                    alkali_resistance_class VARCHAR(10),
+                    lead_release_mgdm2 DECIMAL(8,4),
+                    cadmium_release_mgdm2 DECIMAL(8,4),
+                    
+                    -- Thermal Properties
+                    thermal_expansion_coefficient DECIMAL(8,4),
+                    thermal_shock_resistance_passed BOOLEAN,
+                    crazing_resistance_passed BOOLEAN,
+                    frost_resistance_passed BOOLEAN,
+                    
+                    -- Moisture and Size Stability
+                    moisture_expansion_percentage DECIMAL(6,4),
+                    
+                    -- Surface Properties
+                    deep_abrasion_resistance_mm3 DECIMAL(8,2),
+                    slip_resistance_wet DECIMAL(4,2),
+                    slip_resistance_dry DECIMAL(4,2),
+                    
+                    -- Test Conditions
+                    test_temperature_celsius DECIMAL(5,2),
+                    test_humidity_percentage DECIMAL(5,2),
+                    testing_equipment VARCHAR(255),
+                    
+                    -- Results
+                    overall_grade VARCHAR(10),
+                    application_classification VARCHAR(100),
+                    compliance_certificate_number VARCHAR(100),
+                    test_notes TEXT,
+                    
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+
+            # Production Line Monitoring
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS production_line_status (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    line_name VARCHAR(100) NOT NULL,
+                    station_name VARCHAR(100) NOT NULL,
+                    equipment_id VARCHAR(50),
+                    current_batch_id INTEGER REFERENCES production_batches(id),
+                    status VARCHAR(50) NOT NULL,
+                    operator_id INTEGER REFERENCES users(id),
+                    work_instruction_displayed TEXT,
+                    parameter_values TEXT,
+                    last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    alert_status VARCHAR(20) DEFAULT 'normal',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+
             # Create indexes for better performance
             cur.execute("CREATE INDEX IF NOT EXISTS idx_production_batches_date ON production_batches(production_date)")
             cur.execute("CREATE INDEX IF NOT EXISTS idx_quality_tests_batch ON quality_tests(batch_id)")
             cur.execute("CREATE INDEX IF NOT EXISTS idx_energy_consumption_date ON energy_consumption(recorded_date)")
             cur.execute("CREATE INDEX IF NOT EXISTS idx_waste_records_date ON waste_records(recorded_date)")
             cur.execute("CREATE INDEX IF NOT EXISTS idx_alerts_unresolved ON alerts(is_resolved)")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_raw_materials_supplier ON raw_materials(supplier_id)")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_raw_materials_status ON raw_materials(status)")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_silos_material_type ON silos(material_type)")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_glaze_tanks_status ON glaze_tanks(status)")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_advanced_tests_batch ON advanced_quality_tests(batch_id)")
 
             conn.commit()
             logger.info("SQLite database tables created successfully")
@@ -377,6 +536,9 @@ class LocalDatabaseManager:
         standards_exist = self.execute_query("SELECT COUNT(*) as count FROM iso_standards")
         if not standards_exist or standards_exist[0]['count'] == 0:
             self.seed_iso_standards()
+        
+        # Seed new module data - will be implemented
+        pass
 
     def seed_iso_standards(self):
         """Seed ISO standards for ceramic tiles"""

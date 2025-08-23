@@ -1059,6 +1059,172 @@ def record_waste():
         return jsonify({'error': 'Failed to record waste data'}), 500
 
 # ============================================================================
+# RAW MATERIAL MANAGEMENT ROUTES
+# ============================================================================
+
+@app.route('/raw-materials', methods=['GET', 'POST'])
+def raw_materials():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        try:
+            form_type = request.form.get('form_type')
+            
+            if form_type == 'supplier':
+                supplier_data = {
+                    'supplier_code': request.form.get('supplier_code'),
+                    'supplier_name': request.form.get('supplier_name'),
+                    'contact_person': request.form.get('contact_person'),
+                    'phone': request.form.get('phone'),
+                    'email': request.form.get('email'),
+                    'address': request.form.get('address'),
+                    'region': request.form.get('region'),
+                    'certification_status': request.form.get('certification_status', 'pending'),
+                    'quality_rating': request.form.get('quality_rating', type=float) or 5.0
+                }
+                
+                # Remove empty values
+                supplier_data = {k: v for k, v in supplier_data.items() if v is not None and v != ''}
+                
+                supplier = db.insert_record('suppliers', supplier_data)
+                if supplier:
+                    flash('Fournisseur ajouté avec succès', 'success')
+                else:
+                    flash('Erreur lors de l\'ajout du fournisseur', 'error')
+            
+            elif form_type == 'material':
+                material_data = {
+                    'material_code': request.form.get('material_code'),
+                    'material_name': request.form.get('material_name'),
+                    'material_type': request.form.get('material_type'),
+                    'supplier_id': request.form.get('supplier_id', type=int),
+                    'lot_number': request.form.get('lot_number'),
+                    'quantity_kg': request.form.get('quantity_kg', type=float),
+                    'unit_cost': request.form.get('unit_cost', type=float),
+                    'humidity_percentage': request.form.get('humidity_percentage', type=float),
+                    'particle_size_microns': request.form.get('particle_size_microns', type=float),
+                    'chemical_composition': request.form.get('chemical_composition'),
+                    'storage_location': request.form.get('storage_location'),
+                    'expiry_date': request.form.get('expiry_date'),
+                    'inspection_notes': request.form.get('inspection_notes'),
+                    'status': 'en_attente',  # Default status
+                    'inspected_by': session.get('user_id')
+                }
+                
+                # Remove empty values
+                material_data = {k: v for k, v in material_data.items() if v is not None and v != ''}
+                
+                material = db.insert_record('raw_materials', material_data)
+                if material:
+                    flash('Matière première enregistrée avec succès', 'success')
+                else:
+                    flash('Erreur lors de l\'enregistrement de la matière première', 'error')
+                    
+        except Exception as e:
+            logger.error(f"Raw material form error: {e}")
+            flash('Erreur lors du traitement du formulaire', 'error')
+    
+    # Get data for page
+    try:
+        suppliers = db.execute_query("SELECT * FROM suppliers WHERE is_active = 1 ORDER BY supplier_name")
+        materials = db.execute_query("""
+            SELECT rm.*, s.supplier_name, u.full_name as inspected_by_name
+            FROM raw_materials rm
+            LEFT JOIN suppliers s ON rm.supplier_id = s.id
+            LEFT JOIN users u ON rm.inspected_by = u.id
+            ORDER BY rm.reception_date DESC
+        """)
+        
+        # Get material type counts
+        material_stats = db.execute_query("""
+            SELECT 
+                material_type,
+                COUNT(*) as count,
+                SUM(quantity_kg) as total_quantity,
+                AVG(unit_cost) as avg_cost
+            FROM raw_materials 
+            GROUP BY material_type
+        """)
+        
+    except Exception as e:
+        logger.error(f"Raw materials page error: {e}")
+        suppliers = []
+        materials = []
+        material_stats = []
+    
+    return render_template('raw_materials.html', 
+                         suppliers=suppliers, 
+                         materials=materials,
+                         material_stats=material_stats)
+
+@app.route('/powder-preparation', methods=['GET', 'POST'])
+def powder_preparation():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        try:
+            silo_data = {
+                'silo_code': request.form.get('silo_code'),
+                'silo_name': request.form.get('silo_name'),
+                'capacity_kg': request.form.get('capacity_kg', type=float),
+                'current_level_kg': request.form.get('current_level_kg', type=float),
+                'material_type': request.form.get('material_type'),
+                'humidity_sensor_id': request.form.get('humidity_sensor_id'),
+                'target_humidity_min': request.form.get('target_humidity_min', type=float),
+                'target_humidity_max': request.form.get('target_humidity_max', type=float),
+                'current_humidity': request.form.get('current_humidity', type=float),
+                'location': request.form.get('location'),
+                'status': request.form.get('status', 'active')
+            }
+            
+            # Remove empty values
+            silo_data = {k: v for k, v in silo_data.items() if v is not None and v != ''}
+            
+            silo = db.insert_record('silos', silo_data)
+            if silo:
+                flash('Silo ajouté avec succès', 'success')
+            else:
+                flash('Erreur lors de l\'ajout du silo', 'error')
+                
+        except Exception as e:
+            logger.error(f"Silo form error: {e}")
+            flash('Erreur lors du traitement du formulaire', 'error')
+    
+    # Get silos data
+    try:
+        silos = db.execute_query("SELECT * FROM silos ORDER BY silo_code")
+        
+        # Calculate summary stats
+        silo_stats = {
+            'total_silos': len(silos),
+            'total_capacity': sum(s['capacity_kg'] for s in silos if s['capacity_kg']),
+            'total_content': sum(s['current_level_kg'] for s in silos if s['current_level_kg']),
+            'avg_humidity': sum(s['current_humidity'] for s in silos if s['current_humidity']) / len(silos) if silos else 0
+        }
+        
+        # Check humidity alerts
+        humidity_alerts = []
+        for silo in silos:
+            if silo['current_humidity'] and silo['target_humidity_min'] and silo['target_humidity_max']:
+                if silo['current_humidity'] < silo['target_humidity_min']:
+                    humidity_alerts.append(f"Silo {silo['silo_code']}: Humidité trop faible ({silo['current_humidity']}%)")
+                elif silo['current_humidity'] > silo['target_humidity_max']:
+                    humidity_alerts.append(f"Silo {silo['silo_code']}: Humidité trop élevée ({silo['current_humidity']}%)")
+        
+    except Exception as e:
+        logger.error(f"Powder preparation page error: {e}")
+        silos = []
+        silo_stats = {}
+        humidity_alerts = []
+    
+    return render_template('powder_preparation.html', 
+                         silos=silos,
+                         silo_stats=silo_stats,
+                         humidity_alerts=humidity_alerts)
+
+# ============================================================================
 # ERROR HANDLERS
 # ============================================================================
 
