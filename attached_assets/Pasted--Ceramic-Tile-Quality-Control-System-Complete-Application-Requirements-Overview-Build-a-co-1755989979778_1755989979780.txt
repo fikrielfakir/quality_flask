@@ -1,0 +1,216 @@
+# Ceramic Tile Quality Control System - Complete Application Requirements
+
+## Overview
+Build a comprehensive web-based quality control application for ceramic tile manufacturing that implements the CETEMCO diagnostic recommendations and ISO 13006:2018 standards compliance.
+
+## Core Functionality Requirements
+
+### 1. Production Process Management
+- **Raw Material Reception Control**
+  - Material identification and status tracking (conforme/non-conforme/en attente)
+  - Incoming material inspection forms for: frittes, colorants, additifs, frittes micronisées
+  - Supplier management and regional distribution tracking
+  - Material traceability throughout production
+
+- **Powder Preparation Module**
+  - Silo inventory management with status indicators
+  - Humidity measurement recording and control
+  - Automated alerts when humidity values exceed tolerance
+  - Work instruction display for out-of-tolerance conditions
+  - Acceptance threshold management
+
+- **Glaze and Engobe Preparation**
+  - Tank status monitoring for each storage vessel
+  - Equipment calibration tracking (balances, viscometers, densimeters)
+  - Quality parameter recording (viscosity, density, refusal rate)
+  - Acceptance criteria management and display
+
+### 2. Production Line Quality Control
+
+- **Glazing Line Control**
+  - Real-time equipment monitoring and calibration status
+  - Work instruction display at workstations
+  - Parameter acceptance criteria visible to operators
+
+- **Firing Process Management**
+  - Firing parameter control instructions
+  - Temperature and time profile management
+  - Post-firing tile identification ("en attente de tri")
+  - Batch tracking through kilns
+
+- **Sorting and Packaging**
+  - Digital classification criteria display
+  - Defect categorization system
+  - Quality grade assignment
+  - Packaging standards compliance
+
+### 3. ISO 13006:2018 Standards Implementation
+
+#### Group BIII (Ev > 10%) Pressed Ceramic Tiles
+**Dimensional Requirements Testing:**
+- Length and width measurements (±0.9% to ±2.0mm tolerances)
+- Thickness control (±0.5% to ±10% tolerance)
+- Edge straightness verification
+- Rectangularity assessment
+- Surface flatness evaluation
+- Back foot specifications (if applicable)
+
+**Physical Property Testing:**
+- Water absorption testing (Ev > 10%, minimum individual 9%)
+- Breaking strength testing:
+  - Thickness ≥7.5mm: minimum 600N
+  - Thickness <7.5mm: minimum 200N
+- Modulus of rupture calculations
+- Surface abrasion resistance classification (Classes 0-5)
+- Thermal expansion coefficient measurement
+- Thermal shock resistance
+- Crazing resistance for glazed tiles
+- Frost resistance testing
+- Moisture expansion measurement
+
+**Chemical Property Testing:**
+- Stain resistance (minimum Class 3 for glazed tiles)
+- Chemical resistance to acids and alkalis
+- Household chemical resistance
+- Lead and cadmium release testing
+
+#### Group AI (Ev ≤ 0.5%) Extruded Ceramic Tiles
+- Enhanced precision requirements for porcelain tiles
+- Deep abrasion resistance for unglazed tiles (max 275mm³)
+- Mandatory frost resistance
+- Higher breaking strength requirements (≥1300N for thick tiles)
+
+### 4. Laboratory Management System
+
+- **Equipment Inventory and Calibration**
+  - Complete equipment database with calibration schedules
+  - Maintenance history tracking
+  - Equipment protection and precision monitoring
+  - Life cycle documentation for each device
+
+- **Test Method Implementation**
+  - ISO 10545 series test procedures (parts 1-16)
+  - Automated calculation of test results
+  - Statistical analysis and trending
+  - Non-conformity detection and alerts
+
+- **Quality Documentation**
+  - Test certificates generation
+  - Batch quality reports
+  - Traceability documentation
+  - Regulatory compliance reporting
+
+### 5. Warehouse and Finished Product Management
+
+- **Inventory Control**
+  - Product status identification (conforming/non-conforming/pending)
+  - Storage condition monitoring
+  - Handling instruction compliance
+  - Protection against deterioration
+
+- **Product Classification System**
+  - Abrasion class assignment (Classes 0-5)
+  - Application suitability marking
+  - Frost resistance certification
+  - Usage recommendation system
+
+### 6. Data Management and Analytics
+
+- **Real-Time Dashboards**
+  - Production quality metrics
+  - Defect rate trending
+  - Equipment status overview
+  - Compliance score tracking
+
+- **Reporting System**
+  - Daily/weekly/monthly quality reports
+  - Statistical process control charts
+  - Non-conformity analysis
+  - Corrective action tracking
+
+- **Audit Trail**
+  - Complete traceability from raw materials to finished product
+  - User activity logging
+  - Change control documentation
+  - Regulatory compliance evidence
+
+### 7. Mobile-Friendly Interface
+
+- **Operator Workstations**
+  - Touch-screen compatible data entry
+  - Barcode/QR code scanning capability
+  - Visual work instructions
+  - Real-time quality parameter display
+
+- **Laboratory Mobile Access**
+  - Test result entry on mobile devices
+  - Photo documentation capability
+  - Equipment status updates
+  - Emergency notification system
+
+### 8. Integration Requirements
+
+- **Equipment Integration**
+  - Automatic data collection from measuring instruments
+  - PLC integration for production line monitoring
+  - LIMS (Laboratory Information Management System) connectivity
+
+- **ERP Integration**
+  - Production planning synchronization
+  - Inventory management integration
+  - Quality cost tracking
+  - Customer complaint correlation
+
+### 9. Compliance and Certification Support
+
+- **Moroccan Standards Compliance**
+  - NM ISO 13006 implementation
+  - Conformity marking requirements
+  - Certification documentation management
+
+- **International Standards**
+  - ISO 10545 series full implementation
+  - CE marking support for European markets
+  - Export quality documentation
+
+### 10. User Management and Security
+
+- **Role-Based Access Control**
+  - Operator, supervisor, quality manager, and administrator roles
+  - Function-specific permissions
+  - Audit trail for all user actions
+
+- **Training Management**
+  - Work instruction accessibility
+  - Training record tracking
+  - Competency verification
+
+
+
+### Performance Requirements
+- Sub-second response times for critical operations
+- Support for 100+ concurrent users
+- 99.9% uptime availability
+- Automatic scaling capability
+
+## Implementation Priority
+
+### Phase 1 - Core Quality Control
+1. Basic test data entry and management
+2. ISO 13006 standards implementation
+3. Equipment calibration tracking
+4. Basic reporting
+
+### Phase 2 - Production Integration
+1. Real-time production monitoring
+2. Automated data collection
+3. Mobile interfaces
+4. Advanced analytics
+
+### Phase 3 - Advanced Features
+1. Machine learning for defect prediction
+2. Advanced statistical process control
+3. Customer portal integration
+4. Supply chain integration
+
+This comprehensive system will ensure full compliance with CETEMCO recommendations and ISO 13006:2018 standards while providing modern, efficient quality control management for ceramic tile manufacturing.
