@@ -188,7 +188,7 @@
                                 <td>{{ batch.supervisor_name or '-' }}</td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <a href="{{ url_for('quality_tests', batch_id=batch.id) }}" class="btn btn-outline-success" title="Quality Tests">
+                                        <a href="{{ url_for('quality') }}?batch_id={{ batch.id }}" class="btn btn-outline-success" title="Quality Tests">
                                             <i class="fas fa-check"></i>
                                         </a>
                                         <button class="btn btn-outline-primary" onclick="editBatch({{ batch.id }})" title="Edit">

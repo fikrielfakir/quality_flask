@@ -235,9 +235,7 @@ def production():
                 'supervisor_id': session.get('user_id'),
                 'notes': request.form.get('notes').strip() if request.form.get('notes') else None,
                 'status': 'planned',
-                'actual_quantity': None,
-                'start_time': None,
-                'end_time': None
+                'actual_quantity': None
             }
             
             # Check if batch number already exists
