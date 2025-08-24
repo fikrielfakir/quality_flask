@@ -863,6 +863,27 @@ def create_production_batch():
         logger.error(f"Create production batch failed: {e}")
         return jsonify({'error': 'Failed to create production batch'}), 500
 
+@app.route('/api/check-lot-number', methods=['GET'])
+def check_lot_number():
+    """Check if a lot number already exists"""
+    try:
+        lot_number = request.args.get('number')
+        if not lot_number:
+            return jsonify({'error': 'Lot number parameter required'}), 400
+        
+        existing_batch = db.execute_single(
+            "SELECT id FROM production_batches WHERE batch_number = ?", 
+            (lot_number,)
+        )
+        
+        return jsonify({
+            'exists': existing_batch is not None,
+            'lot_number': lot_number
+        })
+    except Exception as e:
+        logger.error(f"Check lot number failed: {e}")
+        return jsonify({'error': 'Failed to check lot number'}), 500
+
 # ============================================================================
 # QUALITY CONTROL ROUTES
 # ============================================================================

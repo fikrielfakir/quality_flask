@@ -27,7 +27,12 @@
                         <div class="col-md-3">
                             <div class="mb-3">
                                 <label for="batch_number" class="form-label">Numéro de Lot *</label>
-                                <input type="text" class="form-control" id="batch_number" name="batch_number" required>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="batch_number" name="batch_number" required placeholder="LOT-2025-001">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="generateLotNumber()" title="Générer un numéro unique">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <div class="col-md-3">
@@ -214,8 +219,68 @@
 // Set today's date as default
 document.getElementById('production_date').value = new Date().toISOString().split('T')[0];
 
+// Generate unique lot number
+async function generateLotNumber() {
+    const btn = document.querySelector('button[onclick="generateLotNumber()"]');
+    const input = document.getElementById('batch_number');
+    
+    // Show loading state
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    btn.disabled = true;
+    
+    try {
+        // Get current date for format
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        
+        // Try different patterns until we find a unique one
+        let attempts = 0;
+        let lotNumber = '';
+        let isUnique = false;
+        
+        while (!isUnique && attempts < 50) {
+            attempts++;
+            const sequence = String(attempts).padStart(3, '0');
+            lotNumber = `LOT-${year}${month}${day}-${sequence}`;
+            
+            // Check if this number exists
+            const response = await fetch(`/api/check-lot-number?number=${encodeURIComponent(lotNumber)}`);
+            const data = await response.json();
+            isUnique = !data.exists;
+        }
+        
+        if (isUnique) {
+            input.value = lotNumber;
+            input.focus();
+            // Flash success
+            input.classList.add('is-valid');
+            setTimeout(() => input.classList.remove('is-valid'), 2000);
+        } else {
+            throw new Error('Unable to generate unique lot number');
+        }
+        
+    } catch (error) {
+        console.error('Error generating lot number:', error);
+        alert('Erreur lors de la génération du numéro de lot. Veuillez essayer manuellement.');
+    } finally {
+        // Restore button
+        btn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+        btn.disabled = false;
+    }
+}
+
 function editBatch(batchId) {
     alert('Edit functionality will be implemented in the next version.');
 }
+
+// Auto-generate lot number on page load if field is empty
+document.addEventListener('DOMContentLoaded', function() {
+    const batchInput = document.getElementById('batch_number');
+    if (!batchInput.value.trim()) {
+        generateLotNumber();
+    }
+});
 </script>
 {% endblock %}
