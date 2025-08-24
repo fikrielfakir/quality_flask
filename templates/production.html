@@ -331,21 +331,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 return false;
             }
             
-            console.log('✅ All validation passed - Form will submit');
+            console.log('✅ All validation passed - Form will submit now!');
             
-            // Show loading state
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Création en cours...';
-            submitBtn.disabled = true;
+            // Show loading state ONLY after validation passes
+            // Use setTimeout to allow form submission to proceed first
+            setTimeout(() => {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Création en cours...';
+                submitBtn.disabled = true;
+            }, 10);
             
             // Allow form to proceed
             return true;
         });
         
-        // Debug button click
+        // Debug button click - but don't interfere with submission
         submitBtn.addEventListener('click', function(e) {
             console.log('🖱️ Submit button clicked');
             console.log('Button type:', submitBtn.type);
             console.log('Button disabled:', submitBtn.disabled);
+            console.log('Form valid?', form.checkValidity());
         });
     } else {
         console.error('❌ Form or submit button not found!');
