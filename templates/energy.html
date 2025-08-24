@@ -82,7 +82,7 @@
                 </h5>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ url_for('energy') }}">
+                <form method="POST" action="{{ url_for('energy.energy') }}">
                     <input type="hidden" name="form_type" value="energy_consumption">
                     <div class="row">
                         <div class="col-md-3">
@@ -168,7 +168,7 @@
                 </h5>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ url_for('energy') }}">
+                <form method="POST" action="{{ url_for('energy.energy') }}">
                     <input type="hidden" name="form_type" value="heat_recovery">
                     <div class="row">
                         <div class="col-md-3">

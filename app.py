@@ -1,247 +1,98 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+"""
+Dersa EcoQuality - Main Flask Application
+Pure Flask web application for ceramic tile quality management
+"""
+
+from flask import Flask, render_template, session, redirect, url_for
+from data.database import DatabaseManager
 import os
 import logging
-from datetime import datetime
-from database import DatabaseStorage
+
+# Import route blueprints
+from routes.auth import auth_bp
+from routes.main import main_bp
+from routes.production import production_bp
+from routes.quality import quality_bp
+from routes.energy import energy_bp
+from routes.waste import waste_bp
+from routes.raw_materials import raw_materials_bp
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = Flask(__name__)
-CORS(app)
-
-# Initialize database storage
-storage = DatabaseStorage()
-
-# Root route
-@app.route('/')
-def home():
-    return jsonify({
-        'message': 'Flask API Server',
-        'status': 'running',
-        'version': '1.0.0',
-        'endpoints': {
-            'auth': '/api/auth/login, /api/auth/register',
-            'quality_tests': '/api/quality-tests',
-            'production_lots': '/api/production-lots',
-            'energy_consumption': '/api/energy-consumption',
-            'waste_records': '/api/waste-records',
-            'compliance_documents': '/api/compliance-documents',
-            'testing_campaigns': '/api/testing-campaigns'
-        }
-    })
-
-# Global variable to store request start times
-request_times = {}
-
-@app.before_request
-def log_request():
-    start_time = datetime.now()
-    request_times[id(request)] = start_time
-
-@app.after_request
-def log_response(response):
-    request_id = id(request)
-    if request_id in request_times:
-        duration = datetime.now() - request_times[request_id]
-        duration_ms = duration.total_seconds() * 1000
-        
-        if request.path.startswith('/api'):
-            log_line = f"{request.method} {request.path} {response.status_code} in {duration_ms:.0f}ms"
-            if len(log_line) > 80:
-                log_line = log_line[:79] + "…"
-            logger.info(log_line)
-        
-        # Clean up the request time
-        del request_times[request_id]
+def create_app():
+    """Application factory"""
+    app = Flask(__name__)
+    app.secret_key = 'dersa_ecoquality_secret_key_2025'
     
-    return response
-
-# Authentication routes
-@app.route('/api/auth/login', methods=['POST'])
-def login():
+    # Initialize database
     try:
-        data = request.get_json()
-        email = data.get('email')
-        password = data.get('password')
-        
-        user = storage.authenticate_user(email, password)
-        
-        if not user:
-            return jsonify({'error': 'Invalid credentials'}), 401
-        
-        return jsonify({'user': user})
+        db = DatabaseManager()
+        db.seed_initial_data()
+        logger.info("Database initialized successfully")
     except Exception as e:
-        logger.error(f"Authentication failed: {e}")
-        return jsonify({'error': 'Authentication failed'}), 500
+        logger.error(f"Database initialization failed: {e}")
+        raise RuntimeError(f"Cannot start application without database: {e}")
+    
+    # Register blueprints
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(main_bp)
+    app.register_blueprint(production_bp)
+    app.register_blueprint(quality_bp)
+    app.register_blueprint(energy_bp)
+    app.register_blueprint(waste_bp)
+    app.register_blueprint(raw_materials_bp)
+    
+    # Template filters for better display
+    @app.template_filter('format_date')
+    def format_date_filter(date_obj):
+        """Format date for templates"""
+        from utils.helpers import format_date
+        return format_date(date_obj)
+    
+    @app.template_filter('format_datetime')
+    def format_datetime_filter(datetime_obj):
+        """Format datetime for templates"""
+        from utils.helpers import format_datetime
+        return format_datetime(datetime_obj)
+    
+    @app.template_filter('status_badge')
+    def status_badge_filter(status):
+        """Get CSS class for status badges"""
+        from utils.helpers import get_status_badge_class
+        return get_status_badge_class(status)
+    
+    @app.template_filter('priority_badge')
+    def priority_badge_filter(priority):
+        """Get CSS class for priority badges"""
+        from utils.helpers import get_priority_badge_class
+        return get_priority_badge_class(priority)
+    
+    # Error handlers
+    @app.errorhandler(404)
+    def not_found_error(error):
+        return render_template('404.html'), 404
+    
+    @app.errorhandler(500)
+    def internal_error(error):
+        return render_template('500.html'), 500
+    
+    # Context processors for templates
+    @app.context_processor
+    def inject_user():
+        """Inject user session data into all templates"""
+        return {
+            'user_id': session.get('user_id'),
+            'username': session.get('username'),
+            'user_role': session.get('role'),
+            'full_name': session.get('full_name')
+        }
+    
+    return app
 
-@app.route('/api/auth/register', methods=['POST'])
-def register():
-    try:
-        data = request.get_json()
-        email = data.get('email')
-        password = data.get('password')
-        full_name = data.get('fullName')
-        department = data.get('department')
-        role = data.get('role', 'operator')
-        
-        # Check if user already exists
-        existing_user = storage.get_profile_by_email(email)
-        if existing_user:
-            return jsonify({'error': 'User already exists'}), 400
-        
-        user = storage.create_profile({
-            'email': email,
-            'password': password,
-            'full_name': full_name,
-            'department': department,
-            'role': role
-        })
-        
-        return jsonify({'user': user})
-    except Exception as e:
-        logger.error(f"Registration failed: {e}")
-        return jsonify({'error': 'Registration failed'}), 500
-
-# Quality tests routes
-@app.route('/api/quality-tests', methods=['GET'])
-def get_quality_tests():
-    try:
-        tests = storage.get_quality_tests()
-        return jsonify(tests)
-    except Exception as e:
-        logger.error(f"Failed to fetch quality tests: {e}")
-        return jsonify({'error': 'Failed to fetch quality tests'}), 500
-
-@app.route('/api/quality-tests', methods=['POST'])
-def create_quality_test():
-    try:
-        data = request.get_json()
-        test = storage.create_quality_test(data)
-        return jsonify(test)
-    except Exception as e:
-        logger.error(f"Failed to create quality test: {e}")
-        return jsonify({'error': 'Failed to create quality test'}), 500
-
-@app.route('/api/quality-tests/<test_id>', methods=['PUT'])
-def update_quality_test(test_id):
-    try:
-        data = request.get_json()
-        test = storage.update_quality_test(test_id, data)
-        return jsonify(test)
-    except Exception as e:
-        logger.error(f"Failed to update quality test: {e}")
-        return jsonify({'error': 'Failed to update quality test'}), 500
-
-# Production lots routes
-@app.route('/api/production-lots', methods=['GET'])
-def get_production_lots():
-    try:
-        lots = storage.get_production_lots()
-        return jsonify(lots)
-    except Exception as e:
-        logger.error(f"Failed to fetch production lots: {e}")
-        return jsonify({'error': 'Failed to fetch production lots'}), 500
-
-@app.route('/api/production-lots', methods=['POST'])
-def create_production_lot():
-    try:
-        data = request.get_json()
-        lot = storage.create_production_lot(data)
-        return jsonify(lot)
-    except Exception as e:
-        logger.error(f"Failed to create production lot: {e}")
-        return jsonify({'error': 'Failed to create production lot'}), 500
-
-# Energy consumption routes
-@app.route('/api/energy-consumption', methods=['GET'])
-def get_energy_consumption():
-    try:
-        records = storage.get_energy_consumption()
-        return jsonify(records)
-    except Exception as e:
-        logger.error(f"Failed to fetch energy consumption: {e}")
-        return jsonify({'error': 'Failed to fetch energy consumption'}), 500
-
-@app.route('/api/energy-consumption', methods=['POST'])
-def create_energy_record():
-    try:
-        data = request.get_json()
-        record = storage.create_energy_record(data)
-        return jsonify(record)
-    except Exception as e:
-        logger.error(f"Failed to create energy record: {e}")
-        return jsonify({'error': 'Failed to create energy record'}), 500
-
-# Waste records routes
-@app.route('/api/waste-records', methods=['GET'])
-def get_waste_records():
-    try:
-        records = storage.get_waste_records()
-        return jsonify(records)
-    except Exception as e:
-        logger.error(f"Failed to fetch waste records: {e}")
-        return jsonify({'error': 'Failed to fetch waste records'}), 500
-
-@app.route('/api/waste-records', methods=['POST'])
-def create_waste_record():
-    try:
-        data = request.get_json()
-        record = storage.create_waste_record(data)
-        return jsonify(record)
-    except Exception as e:
-        logger.error(f"Failed to create waste record: {e}")
-        return jsonify({'error': 'Failed to create waste record'}), 500
-
-# Compliance documents routes
-@app.route('/api/compliance-documents', methods=['GET'])
-def get_compliance_documents():
-    try:
-        documents = storage.get_compliance_documents()
-        return jsonify(documents)
-    except Exception as e:
-        logger.error(f"Failed to fetch compliance documents: {e}")
-        return jsonify({'error': 'Failed to fetch compliance documents'}), 500
-
-@app.route('/api/compliance-documents', methods=['POST'])
-def create_compliance_document():
-    try:
-        data = request.get_json()
-        document = storage.create_compliance_document(data)
-        return jsonify(document)
-    except Exception as e:
-        logger.error(f"Failed to create compliance document: {e}")
-        return jsonify({'error': 'Failed to create compliance document'}), 500
-
-# Testing campaigns routes
-@app.route('/api/testing-campaigns', methods=['GET'])
-def get_testing_campaigns():
-    try:
-        campaigns = storage.get_testing_campaigns()
-        return jsonify(campaigns)
-    except Exception as e:
-        logger.error(f"Failed to fetch testing campaigns: {e}")
-        return jsonify({'error': 'Failed to fetch testing campaigns'}), 500
-
-@app.route('/api/testing-campaigns', methods=['POST'])
-def create_testing_campaign():
-    try:
-        data = request.get_json()
-        campaign = storage.create_testing_campaign(data)
-        return jsonify(campaign)
-    except Exception as e:
-        logger.error(f"Failed to create testing campaign: {e}")
-        return jsonify({'error': 'Failed to create testing campaign'}), 500
-
-@app.errorhandler(404)
-def not_found(error):
-    return jsonify({'error': 'Not found'}), 404
-
-@app.errorhandler(500)
-def internal_error(error):
-    return jsonify({'error': 'Internal Server Error'}), 500
+# Create the Flask application
+app = create_app()
 
 if __name__ == '__main__':
     # ALWAYS serve the app on port 5000
