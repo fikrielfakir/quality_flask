@@ -209,22 +209,36 @@ def dashboard():
 @app.route('/production', methods=['GET', 'POST'])
 def production():
     """Production Lot Management - Rebuilt Logic"""
+    logger.info(f"🔧 PRODUCTION ROUTE ACCESSED - Method: {request.method}")
+    logger.info(f"User Session: {session.get('username')} (ID: {session.get('user_id')})")
+    
     # Ensure user is authenticated
     if 'user_id' not in session:
+        logger.warning("❌ Unauthenticated access attempt to production page")
         flash('Veuillez vous connecter pour accéder à cette page', 'error')
         return redirect(url_for('login'))
     
     # Handle POST request (Create new production lot)
     if request.method == 'POST':
+        logger.info("📝 POST request detected - redirecting to create_production_lot()")
         return create_production_lot()
     
     # Handle GET request (Display production lots)
+    logger.info("👁️ GET request detected - redirecting to display_production_lots()")
     return display_production_lots()
 
 def create_production_lot():
     """Create a new production lot with robust validation"""
+    logger.info("=== STARTING PRODUCTION LOT CREATION ===")
+    logger.info(f"User Session - Username: {session.get('username')}, ID: {session.get('user_id')}, Role: {session.get('role')}")
+    logger.info(f"Request Method: {request.method}")
+    logger.info(f"Request Content-Type: {request.content_type}")
+    
     try:
-        logger.info(f"Creating production lot - User: {session.get('username')} (ID: {session.get('user_id')})")
+        # Log raw form data first
+        logger.info("=== RAW FORM DATA ===")
+        for key, value in request.form.items():
+            logger.info(f"  {key}: '{value}'")
         
         # Extract and validate form data
         form_data = {
@@ -238,49 +252,81 @@ def create_production_lot():
             'notes': request.form.get('notes', '').strip()
         }
         
-        logger.info(f"Form data received: {form_data}")
+        logger.info("=== PROCESSED FORM DATA ===")
+        for key, value in form_data.items():
+            logger.info(f"  {key}: '{value}' (length: {len(value)})")
         
         # Validate required fields
+        logger.info("=== VALIDATION STEP 1: Required Fields ===")
         required_fields = ['batch_number', 'product_type', 'production_date', 'planned_quantity']
-        missing_fields = [field for field in required_fields if not form_data[field]]
+        missing_fields = []
+        
+        for field in required_fields:
+            value = form_data.get(field, '')
+            logger.info(f"  Checking {field}: '{value}' - {'✓ OK' if value else '✗ MISSING'}")
+            if not value:
+                missing_fields.append(field)
         
         if missing_fields:
             error_msg = f"Champs obligatoires manquants: {', '.join(missing_fields)}"
             flash(error_msg, 'error')
-            logger.warning(f"Validation failed: {error_msg}")
+            logger.error(f"❌ VALIDATION FAILED: {error_msg}")
             return redirect(url_for('production'))
         
+        logger.info("✅ Required fields validation passed")
+        
         # Validate and convert data types
+        logger.info("=== VALIDATION STEP 2: Data Type Conversion ===")
         try:
+            logger.info(f"Converting planned_quantity: '{form_data['planned_quantity']}'")
             planned_quantity = int(form_data['planned_quantity'])
+            logger.info(f"Converted to integer: {planned_quantity}")
+            
             if planned_quantity <= 0:
                 raise ValueError("La quantité doit être positive")
-        except (ValueError, TypeError):
+            logger.info("✅ Planned quantity validation passed")
+            
+        except (ValueError, TypeError) as e:
+            logger.error(f"❌ Quantity validation failed: {e}")
             flash('La quantité prévue doit être un nombre entier positif', 'error')
             return redirect(url_for('production'))
         
         firing_temperature = None
         if form_data['firing_temperature']:
+            logger.info(f"Converting firing_temperature: '{form_data['firing_temperature']}'")
             try:
                 firing_temperature = float(form_data['firing_temperature'])
+                logger.info(f"Converted to float: {firing_temperature}")
+                
                 if firing_temperature < 500 or firing_temperature > 1500:
                     raise ValueError("Température hors limites")
-            except (ValueError, TypeError):
+                logger.info("✅ Temperature validation passed")
+                
+            except (ValueError, TypeError) as e:
+                logger.error(f"❌ Temperature validation failed: {e}")
                 flash('La température de cuisson doit être un nombre entre 500 et 1500°C', 'error')
                 return redirect(url_for('production'))
+        else:
+            logger.info("No firing temperature provided - skipping validation")
         
         # Check for duplicate batch number
+        logger.info("=== VALIDATION STEP 3: Duplicate Check ===")
+        logger.info(f"Checking for existing batch number: '{form_data['batch_number']}'")
+        
         existing_batch = db.execute_single(
             "SELECT id, batch_number FROM production_batches WHERE batch_number = ?", 
             (form_data['batch_number'],)
         )
         
         if existing_batch:
+            logger.error(f"❌ DUPLICATE FOUND: Batch {form_data['batch_number']} already exists with ID {existing_batch['id']}")
             flash(f'Erreur: Le numéro de lot "{form_data["batch_number"]}" existe déjà', 'error')
-            logger.warning(f"Duplicate batch number attempted: {form_data['batch_number']}")
             return redirect(url_for('production'))
         
+        logger.info("✅ No duplicate found - batch number is unique")
+        
         # Prepare data for database insertion
+        logger.info("=== DATABASE INSERTION STEP ===")
         lot_data = {
             'batch_number': form_data['batch_number'],
             'product_type': form_data['product_type'],
@@ -295,25 +341,58 @@ def create_production_lot():
             'actual_quantity': None
         }
         
-        logger.info(f"Inserting lot data: {lot_data}")
+        logger.info("=== FINAL DATA FOR INSERTION ===")
+        for key, value in lot_data.items():
+            logger.info(f"  {key}: {value} ({type(value).__name__})")
+        
+        # Test database connection first
+        logger.info("Testing database connection...")
+        try:
+            test_query = db.execute_single("SELECT COUNT(*) as count FROM production_batches")
+            logger.info(f"Current batch count in database: {test_query['count'] if test_query else 'ERROR'}")
+        except Exception as db_test_error:
+            logger.error(f"❌ Database connection test failed: {db_test_error}")
+            flash('Erreur de connexion à la base de données', 'error')
+            return redirect(url_for('production'))
         
         # Insert into database
+        logger.info("Attempting database insertion...")
         result = db.insert_record('production_batches', lot_data)
+        logger.info(f"Database insertion result: {result}")
         
         if result:
             success_msg = f'✅ Lot de production "{form_data["batch_number"]}" créé avec succès'
             flash(success_msg, 'success')
-            logger.info(f"SUCCESS: Production lot created - {form_data['batch_number']} by user {session.get('user_id')}")
+            logger.info(f"🎉 SUCCESS: Production lot created successfully!")
+            logger.info(f"  Batch Number: {form_data['batch_number']}")
+            logger.info(f"  Created by: {session.get('username')} (ID: {session.get('user_id')})")
+            logger.info(f"  Database Result: {result}")
+            
+            # Verify insertion by querying back
+            verification = db.execute_single(
+                "SELECT id, batch_number, status FROM production_batches WHERE batch_number = ?", 
+                (form_data['batch_number'],)
+            )
+            if verification:
+                logger.info(f"✅ Verification successful - Lot found in database with ID: {verification['id']}")
+            else:
+                logger.warning("⚠️ Verification failed - Lot not found in database after insertion")
+                
         else:
             flash('❌ Erreur: Impossible de créer le lot de production', 'error')
-            logger.error(f"Database insertion failed for batch: {form_data['batch_number']}")
+            logger.error(f"❌ DATABASE INSERTION FAILED")
+            logger.error(f"  Batch Number: {form_data['batch_number']}")
+            logger.error(f"  Data sent to database: {lot_data}")
+            logger.error(f"  Insert result: {result}")
         
+        logger.info("=== PRODUCTION LOT CREATION COMPLETED ===")
         return redirect(url_for('production'))
         
     except Exception as e:
         error_msg = f"Erreur système lors de la création du lot: {str(e)}"
         flash(error_msg, 'error')
-        logger.error(f"CRITICAL ERROR in create_production_lot: {e}", exc_info=True)
+        logger.error(f"💥 CRITICAL ERROR in create_production_lot: {e}", exc_info=True)
+        logger.error("=== PRODUCTION LOT CREATION FAILED ===")
         return redirect(url_for('production'))
 
 def display_production_lots():
