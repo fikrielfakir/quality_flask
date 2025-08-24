@@ -1,0 +1,284 @@
+# Flask route with comprehensive debugging for production lot creation
+
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+import logging
+from datetime import datetime, date
+import traceback
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+@app.route('/production', methods=['GET', 'POST'])
+def production():
+    """
+    Production management route with comprehensive debugging
+    """
+    logger.info(f"Production route accessed - Method: {request.method}")
+    
+    if request.method == 'GET':
+        # Handle GET request - show the form
+        try:
+            # Get any filters from query parameters
+            status = request.args.get('status', '')
+            date_from = request.args.get('date_from', '')
+            date_to = request.args.get('date_to', '')
+            
+            # Fetch existing batches (with your database logic)
+            batches = get_production_batches(status=status, date_from=date_from, date_to=date_to)
+            
+            return render_template('production.html', 
+                                 batches=batches, 
+                                 today=date.today().isoformat())
+                                 
+        except Exception as e:
+            logger.error(f"Error in GET /production: {e}")
+            logger.error(traceback.format_exc())
+            flash('Erreur lors du chargement des données de production', 'error')
+            return render_template('production.html', batches=[], today=date.today().isoformat())
+    
+    elif request.method == 'POST':
+        # Handle POST request - create new batch
+        logger.info("Processing POST request for production batch creation")
+        
+        try:
+            # Debug: Log all form data
+            logger.debug(f"Form data received: {dict(request.form)}")
+            logger.debug(f"Request content type: {request.content_type}")
+            logger.debug(f"Request data: {request.get_data()}")
+            
+            # Extract and validate form data
+            batch_data = extract_batch_data(request.form)
+            logger.info(f"Extracted batch data: {batch_data}")
+            
+            # Validate required fields
+            validation_errors = validate_batch_data(batch_data)
+            if validation_errors:
+                logger.error(f"Validation errors: {validation_errors}")
+                for error in validation_errors:
+                    flash(error, 'error')
+                return redirect(url_for('production'))
+            
+            # Check for duplicate batch number
+            if batch_exists(batch_data['batch_number']):
+                logger.error(f"Duplicate batch number: {batch_data['batch_number']}")
+                flash(f"Le numéro de lot {batch_data['batch_number']} existe déjà", 'error')
+                return redirect(url_for('production'))
+            
+            # Create the batch
+            batch_id = create_production_batch(batch_data)
+            logger.info(f"Created batch with ID: {batch_id}")
+            
+            flash(f"Lot de production {batch_data['batch_number']} créé avec succès!", 'success')
+            return redirect(url_for('production'))
+            
+        except ValueError as ve:
+            logger.error(f"Validation error in POST /production: {ve}")
+            flash(f"Erreur de validation: {str(ve)}", 'error')
+            return redirect(url_for('production'))
+            
+        except Exception as e:
+            logger.error(f"Unexpected error in POST /production: {e}")
+            logger.error(traceback.format_exc())
+            flash('Erreur inattendue lors de la création du lot', 'error')
+            return redirect(url_for('production'))
+
+def extract_batch_data(form_data):
+    """Extract and clean batch data from form submission"""
+    try:
+        batch_data = {
+            'batch_number': form_data.get('batch_number', '').strip(),
+            'product_type': form_data.get('product_type', '').strip(),
+            'production_date': form_data.get('production_date', '').strip(),
+            'planned_quantity': form_data.get('planned_quantity', '').strip(),
+            'kiln_number': form_data.get('kiln_number', '').strip() or None,
+            'firing_temperature': form_data.get('firing_temperature', '').strip() or None,
+            'firing_duration': form_data.get('firing_duration', '').strip() or None,
+            'notes': form_data.get('notes', '').strip() or None,
+        }
+        
+        # Convert numeric fields
+        if batch_data['planned_quantity']:
+            batch_data['planned_quantity'] = int(batch_data['planned_quantity'])
+        
+        if batch_data['firing_temperature']:
+            batch_data['firing_temperature'] = float(batch_data['firing_temperature'])
+        
+        # Convert date
+        if batch_data['production_date']:
+            batch_data['production_date'] = datetime.strptime(
+                batch_data['production_date'], '%Y-%m-%d'
+            ).date()
+        
+        return batch_data
+        
+    except (ValueError, TypeError) as e:
+        logger.error(f"Error extracting batch data: {e}")
+        raise ValueError(f"Données invalides dans le formulaire: {str(e)}")
+
+def validate_batch_data(batch_data):
+    """Validate batch data and return list of errors"""
+    errors = []
+    
+    # Required fields validation
+    required_fields = {
+        'batch_number': 'Numéro de lot',
+        'product_type': 'Type de produit',
+        'production_date': 'Date de production',
+        'planned_quantity': 'Quantité prévue'
+    }
+    
+    for field, label in required_fields.items():
+        if not batch_data.get(field):
+            errors.append(f"{label} est obligatoire")
+    
+    # Specific validations
+    if batch_data.get('batch_number'):
+        if len(batch_data['batch_number']) < 5:
+            errors.append("Le numéro de lot doit contenir au moins 5 caractères")
+        if len(batch_data['batch_number']) > 50:
+            errors.append("Le numéro de lot ne peut pas dépasser 50 caractères")
+    
+    if batch_data.get('planned_quantity'):
+        if batch_data['planned_quantity'] < 1:
+            errors.append("La quantité prévue doit être au moins 1")
+        if batch_data['planned_quantity'] > 100000:
+            errors.append("La quantité prévue semble trop élevée")
+    
+    if batch_data.get('firing_temperature'):
+        if batch_data['firing_temperature'] < 800 or batch_data['firing_temperature'] > 1400:
+            errors.append("La température de cuisson doit être entre 800°C et 1400°C")
+    
+    if batch_data.get('production_date'):
+        # Check if date is not too far in the future
+        max_date = date.today().replace(year=date.today().year + 1)
+        if batch_data['production_date'] > max_date:
+            errors.append("La date de production ne peut pas être trop éloignée dans le futur")
+    
+    return errors
+
+def batch_exists(batch_number):
+    """Check if batch number already exists"""
+    try:
+        # Replace with your actual database query
+        from your_database_module import DatabaseManager
+        db = DatabaseManager()
+        
+        result = db.execute_single(
+            "SELECT id FROM production_batches WHERE batch_number = %s",
+            (batch_number,)
+        )
+        return result is not None
+        
+    except Exception as e:
+        logger.error(f"Error checking batch existence: {e}")
+        return False
+
+def create_production_batch(batch_data):
+    """Create new production batch in database"""
+    try:
+        from your_database_module import DatabaseManager
+        db = DatabaseManager()
+        
+        # Add default status and timestamps
+        batch_data.update({
+            'status': 'planned',
+            'created_at': datetime.now(),
+            'updated_at': datetime.now()
+        })
+        
+        # Insert into database
+        result = db.insert_record('production_batches', batch_data)
+        
+        if result and 'id' in result:
+            return result['id']
+        else:
+            raise Exception("Failed to create batch - no ID returned")
+            
+    except Exception as e:
+        logger.error(f"Error creating production batch: {e}")
+        raise
+
+def get_production_batches(status=None, date_from=None, date_to=None):
+    """Fetch production batches with optional filters"""
+    try:
+        from your_database_module import DatabaseManager
+        db = DatabaseManager()
+        
+        # Build query with filters
+        query = """
+            SELECT pb.*, u.full_name as supervisor_name 
+            FROM production_batches pb 
+            LEFT JOIN users u ON pb.supervisor_id = u.id 
+            WHERE 1=1
+        """
+        params = []
+        
+        if status:
+            query += " AND pb.status = %s"
+            params.append(status)
+        
+        if date_from:
+            query += " AND pb.production_date >= %s"
+            params.append(date_from)
+        
+        if date_to:
+            query += " AND pb.production_date <= %s"
+            params.append(date_to)
+        
+        query += " ORDER BY pb.production_date DESC, pb.created_at DESC"
+        
+        return db.execute_query(query, tuple(params))
+        
+    except Exception as e:
+        logger.error(f"Error fetching production batches: {e}")
+        return []
+
+# API endpoint for checking lot number uniqueness
+@app.route('/api/check-lot-number')
+def check_lot_number():
+    """API endpoint to check if lot number exists"""
+    lot_number = request.args.get('number', '').strip()
+    
+    if not lot_number:
+        return jsonify({'error': 'Lot number required'}), 400
+    
+    try:
+        exists = batch_exists(lot_number)
+        return jsonify({'exists': exists, 'number': lot_number})
+    except Exception as e:
+        logger.error(f"Error checking lot number: {e}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+# Debug route to test form submission
+@app.route('/debug/form-test', methods=['POST'])
+def debug_form_test():
+    """Debug endpoint to test form data reception"""
+    logger.info("Debug form test endpoint accessed")
+    
+    try:
+        # Log all request information
+        debug_info = {
+            'method': request.method,
+            'content_type': request.content_type,
+            'form_data': dict(request.form),
+            'args': dict(request.args),
+            'headers': dict(request.headers),
+            'endpoint': request.endpoint,
+            'url': request.url
+        }
+        
+        logger.info(f"Debug form test info: {debug_info}")
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Form data received successfully',
+            'debug_info': debug_info
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in debug form test: {e}")
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500

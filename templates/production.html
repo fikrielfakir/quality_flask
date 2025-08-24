@@ -191,7 +191,7 @@
                                         <a href="{{ url_for('quality') }}?batch_id={{ batch.id }}" class="btn btn-outline-success" title="Quality Tests">
                                             <i class="fas fa-check"></i>
                                         </a>
-                                        <button class="btn btn-outline-primary" onclick="editBatch({{ batch.id }})" title="Edit">
+                                        <button class="btn btn-outline-primary" onclick="editBatch('{{ batch.id }}')" title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </button>
                                     </div>
@@ -282,22 +282,39 @@ document.addEventListener('DOMContentLoaded', function() {
         generateLotNumber();
     }
     
-    // Add form submission debugging
+    // Add comprehensive form submission debugging
     const form = document.querySelector('form[method="POST"]');
     const submitBtn = document.getElementById('submit-btn');
     
     if (form && submitBtn) {
+        console.log('🔧 Form debugging setup activated');
+        console.log('Form action:', form.action);
+        console.log('Form method:', form.method);
+        
         form.addEventListener('submit', function(e) {
-            console.log('Form submission attempted');
+            console.log('🚀 FORM SUBMISSION ATTEMPTED');
+            console.log('Event:', e);
+            
+            // Log all form data
+            const formData = new FormData(form);
+            console.log('📋 FORM DATA:');
+            for (let [key, value] of formData.entries()) {
+                console.log(`  ${key}: "${value}"`);
+            }
             
             // Check required fields
             const requiredFields = ['batch_number', 'product_type', 'production_date', 'planned_quantity'];
             let allValid = true;
+            let missingFields = [];
             
             requiredFields.forEach(fieldName => {
                 const field = document.getElementById(fieldName);
-                if (!field || !field.value.trim()) {
-                    console.error(`Missing required field: ${fieldName}`);
+                const value = field ? field.value.trim() : '';
+                console.log(`🔍 Checking ${fieldName}: "${value}" (${value ? 'OK' : 'MISSING'})`);
+                
+                if (!field || !value) {
+                    console.error(`❌ Missing required field: ${fieldName}`);
+                    missingFields.push(fieldName);
                     allValid = false;
                     if (field) {
                         field.classList.add('is-invalid');
@@ -308,15 +325,32 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             if (!allValid) {
+                console.error(`❌ FORM VALIDATION FAILED - Missing fields: ${missingFields.join(', ')}`);
                 e.preventDefault();
-                alert('Veuillez remplir tous les champs obligatoires');
+                alert(`Veuillez remplir tous les champs obligatoires: ${missingFields.join(', ')}`);
                 return false;
             }
+            
+            console.log('✅ All validation passed - Form will submit');
             
             // Show loading state
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Création en cours...';
             submitBtn.disabled = true;
+            
+            // Allow form to proceed
+            return true;
         });
+        
+        // Debug button click
+        submitBtn.addEventListener('click', function(e) {
+            console.log('🖱️ Submit button clicked');
+            console.log('Button type:', submitBtn.type);
+            console.log('Button disabled:', submitBtn.disabled);
+        });
+    } else {
+        console.error('❌ Form or submit button not found!');
+        console.log('Form:', form);
+        console.log('Submit button:', submitBtn);
     }
 });
 </script>

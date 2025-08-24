@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion de Production - Debug Version</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container-fluid py-4">
+    <!-- Debug Information Panel -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <h6><i class="fas fa-bug"></i> Debug Information</h6>
+                <div id="debug-info">
+                    <p><strong>Form Method:</strong> <span id="form-method">Not detected</span></p>
+                    <p><strong>Form Action:</strong> <span id="form-action">Not detected</span></p>
+                    <p><strong>Required Fields Status:</strong> <span id="required-status">Checking...</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-4">
+                <i class="fas fa-cogs text-primary"></i> 
+                Gestion des Lots de Production
+            </h1>
+        </div>
+    </div>
+
+    <!-- Add New Batch -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-plus"></i> Créer un Nouveau Lot de Production
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Debug: Show form submission status -->
+                    <div id="submission-status" class="alert d-none"></div>
+                    
+                    <form method="POST" action="/production" id="production-form" novalidate>
+                        <!-- CSRF Token (add if you're using Flask-WTF) -->
+                        <!-- {{ csrf_token() }} -->
+                        
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="batch_number" class="form-label">Numéro de Lot *</label>
+                                    <div class="input-group">
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="batch_number" 
+                                               name="batch_number" 
+                                               required 
+                                               placeholder="LOT-2025-001"
+                                               maxlength="50">
+                                        <button type="button" 
+                                                class="btn btn-outline-secondary" 
+                                                id="generate-lot-btn"
+                                                onclick="generateLotNumber()" 
+                                                title="Générer un numéro unique">
+                                            <i class="fas fa-sync-alt"></i>
+                                        </button>
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        Veuillez saisir un numéro de lot valide.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="product_type" class="form-label">Type de Produit *</label>
+                                    <select class="form-select" id="product_type" name="product_type" required>
+                                        <option value="">Sélectionner le Type de Produit</option>
+                                        <option value="floor_tiles">Carreaux de Sol</option>
+                                        <option value="wall_tiles">Carreaux Muraux</option>
+                                        <option value="gres_cerame">Grès Cérame</option>
+                                        <option value="porcelain_tiles">Carreaux en Porcelaine</option>
+                                        <option value="rectified_tiles">Carreaux Rectifiés</option>
+                                    </select>
+                                    <div class="invalid-feedback">
+                                        Veuillez sélectionner un type de produit.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="mb-3">
+                                    <label for="production_date" class="form-label">Date de Production *</label>
+                                    <input type="date" 
+                                           class="form-control" 
+                                           id="production_date" 
+                                           name="production_date" 
+                                           required>
+                                    <div class="invalid-feedback">
+                                        Veuillez saisir une date de production.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="mb-3">
+                                    <label for="planned_quantity" class="form-label">Quantité Prévue *</label>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="planned_quantity" 
+                                           name="planned_quantity" 
+                                           required 
+                                           min="1" 
+                                           step="1"
+                                           placeholder="ex: 1000">
+                                    <div class="invalid-feedback">
+                                        Veuillez saisir une quantité valide (minimum 1).
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="mb-3">
+                                    <label for="kiln_number" class="form-label">N° Four</label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="kiln_number" 
+                                           name="kiln_number" 
+                                           placeholder="ex: FOUR-01"
+                                           maxlength="20">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="firing_temperature" class="form-label">Température de Cuisson (°C)</label>
+                                    <input type="number" 
+                                           step="0.1" 
+                                           class="form-control" 
+                                           id="firing_temperature" 
+                                           name="firing_temperature" 
+                                           min="800" 
+                                           max="1400" 
+                                           placeholder="ex: 1200">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="firing_duration" class="form-label">Durée de Cuisson</label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="firing_duration" 
+                                           name="firing_duration" 
+                                           placeholder="ex: 18 heures"
+                                           maxlength="50">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="notes" class="form-label">Notes</label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="notes" 
+                                           name="notes"
+                                           maxlength="500">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Debug: Show form data before submission -->
+                        <div class="mb-3">
+                            <button type="button" class="btn btn-info btn-sm" onclick="debugFormData()">
+                                <i class="fas fa-eye"></i> Debug: Voir les données du formulaire
+                            </button>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" id="submit-btn">
+                            <i class="fas fa-save"></i> Créer le Lot
+                        </button>
+                        
+                        <!-- Alternative submit button for testing -->
+                        <button type="button" class="btn btn-secondary ms-2" onclick="submitFormDebug()">
+                            <i class="fas fa-bug"></i> Debug Submit
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sample Production Batches Table (for testing) -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list"></i> Production Batches
+                        <span class="badge bg-secondary ms-2">0 batches</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Batch Number</th>
+                                    <th>Product Type</th>
+                                    <th>Production Date</th>
+                                    <th>Quantity</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        No production batches found. Create your first batch above.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Debug information update
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('production-form');
+    
+    // Update debug info
+    document.getElementById('form-method').textContent = form.method.toUpperCase();
+    document.getElementById('form-action').textContent = form.action;
+    
+    // Set today's date as default
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('production_date').value = today;
+    
+    // Auto-generate lot number on load
+    generateLotNumber();
+    
+    // Check required fields status
+    updateRequiredStatus();
+    
+    // Add event listeners to required fields
+    const requiredFields = ['batch_number', 'product_type', 'production_date', 'planned_quantity'];
+    requiredFields.forEach(fieldName => {
+        const field = document.getElementById(fieldName);
+        if (field) {
+            field.addEventListener('input', updateRequiredStatus);
+            field.addEventListener('change', updateRequiredStatus);
+        }
+    });
+});
+
+function updateRequiredStatus() {
+    const requiredFields = ['batch_number', 'product_type', 'production_date', 'planned_quantity'];
+    let allValid = true;
+    let status = [];
+    
+    requiredFields.forEach(fieldName => {
+        const field = document.getElementById(fieldName);
+        if (field) {
+            const isValid = field.value.trim() !== '';
+            status.push(`${fieldName}: ${isValid ? '✓' : '✗'}`);
+            if (!isValid) allValid = false;
+        }
+    });
+    
+    document.getElementById('required-status').innerHTML = status.join(', ') + 
+        `<br><strong>Ready to submit: ${allValid ? '✅ YES' : '❌ NO'}</strong>`;
+}
+
+// Generate unique lot number
+async function generateLotNumber() {
+    const btn = document.getElementById('generate-lot-btn');
+    const input = document.getElementById('batch_number');
+    
+    // Show loading state
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    btn.disabled = true;
+    
+    try {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const timestamp = Date.now().toString().slice(-4);
+        
+        const lotNumber = `LOT-${year}${month}${day}-${timestamp}`;
+        
+        input.value = lotNumber;
+        input.focus();
+        input.classList.add('is-valid');
+        setTimeout(() => input.classList.remove('is-valid'), 2000);
+        
+        updateRequiredStatus();
+        
+    } catch (error) {
+        console.error('Error generating lot number:', error);
+        showStatus('error', 'Erreur lors de la génération du numéro de lot');
+    } finally {
+        btn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+        btn.disabled = false;
+    }
+}
+
+function debugFormData() {
+    const form = document.getElementById('production-form');
+    const formData = new FormData(form);
+    
+    let dataStr = 'Form Data:\n';
+    for (let [key, value] of formData.entries()) {
+        dataStr += `${key}: "${value}"\n`;
+    }
+    
+    console.log(dataStr);
+    alert(dataStr);
+}
+
+function submitFormDebug() {
+    console.log('=== FORM SUBMISSION DEBUG ===');
+    
+    const form = document.getElementById('production-form');
+    const formData = new FormData(form);
+    
+    console.log('Form method:', form.method);
+    console.log('Form action:', form.action);
+    console.log('Form data:');
+    for (let [key, value] of formData.entries()) {
+        console.log(`  ${key}: "${value}"`);
+    }
+    
+    // Validate required fields
+    const requiredFields = ['batch_number', 'product_type', 'production_date', 'planned_quantity'];
+    let allValid = true;
+    let errors = [];
+    
+    requiredFields.forEach(fieldName => {
+        const field = document.getElementById(fieldName);
+        if (!field || !field.value.trim()) {
+            allValid = false;
+            errors.push(fieldName);
+            if (field) {
+                field.classList.add('is-invalid');
+            }
+        } else {
+            if (field) {
+                field.classList.remove('is-invalid');
+            }
+        }
+    });
+    
+    if (!allValid) {
+        console.error('Validation failed for fields:', errors);
+        showStatus('error', `Champs manquants: ${errors.join(', ')}`);
+        return false;
+    }
+    
+    console.log('All validations passed, submitting form...');
+    showStatus('info', 'Tentative de soumission du formulaire...');
+    
+    // Try to submit via AJAX first for debugging
+    submitViaAjax();
+}
+
+async function submitViaAjax() {
+    const form = document.getElementById('production-form');
+    const formData = new FormData(form);
+    
+    try {
+        showStatus('info', 'Envoi des données via AJAX...');
+        
+        const response = await fetch('/production', {
+            method: 'POST',
+            body: formData
+        });
+        
+        console.log('Response status:', response.status);
+        console.log('Response headers:', [...response.headers.entries()]);
+        
+        const responseText = await response.text();
+        console.log('Response text:', responseText);
+        
+        if (response.ok) {
+            showStatus('success', 'Lot créé avec succès via AJAX!');
+            form.reset();
+            generateLotNumber();
+        } else {
+            showStatus('error', `Erreur HTTP ${response.status}: ${responseText}`);
+        }
+        
+    } catch (error) {
+        console.error('AJAX submission error:', error);
+        showStatus('error', `Erreur AJAX: ${error.message}`);
+        
+        // Fallback to normal form submission
+        console.log('Falling back to normal form submission...');
+        form.submit();
+    }
+}
+
+function showStatus(type, message) {
+    const statusDiv = document.getElementById('submission-status');
+    statusDiv.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'}`;
+    statusDiv.textContent = message;
+    statusDiv.classList.remove('d-none');
+    
+    if (type === 'success') {
+        setTimeout(() => {
+            statusDiv.classList.add('d-none');
+        }, 5000);
+    }
+}
+
+// Handle normal form submission
+document.getElementById('production-form').addEventListener('submit', function(e) {
+    console.log('=== NORMAL FORM SUBMISSION ===');
+    
+    const requiredFields = ['batch_number', 'product_type', 'production_date', 'planned_quantity'];
+    let allValid = true;
+    let errors = [];
+    
+    requiredFields.forEach(fieldName => {
+        const field = document.getElementById(fieldName);
+        if (!field || !field.value.trim()) {
+            allValid = false;
+            errors.push(fieldName);
+            if (field) {
+                field.classList.add('is-invalid');
+            }
+        } else {
+            if (field) {
+                field.classList.remove('is-invalid');
+            }
+        }
+    });
+    
+    if (!allValid) {
+        e.preventDefault();
+        console.error('Validation failed:', errors);
+        showStatus('error', `Veuillez remplir tous les champs obligatoires: ${errors.join(', ')}`);
+        return false;
+    }
+    
+    // Show loading state
+    const submitBtn = document.getElementById('submit-btn');
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Création en cours...';
+    submitBtn.disabled = true;
+    
+    showStatus('info', 'Soumission du formulaire en cours...');
+    
+    console.log('Form validation passed, submitting...');
+});
+</script>
+</body>
+</html>

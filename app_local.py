@@ -210,7 +210,10 @@ def dashboard():
 def production():
     """Production Lot Management - Rebuilt Logic"""
     logger.info(f"🔧 PRODUCTION ROUTE ACCESSED - Method: {request.method}")
+    logger.info(f"Request URL: {request.url}")
+    logger.info(f"Request endpoint: {request.endpoint}")
     logger.info(f"User Session: {session.get('username')} (ID: {session.get('user_id')})")
+    logger.info(f"Request headers: {dict(request.headers)}")
     
     # Ensure user is authenticated
     if 'user_id' not in session:
@@ -221,6 +224,8 @@ def production():
     # Handle POST request (Create new production lot)
     if request.method == 'POST':
         logger.info("📝 POST request detected - redirecting to create_production_lot()")
+        logger.info(f"Content-Type: {request.content_type}")
+        logger.info(f"Content-Length: {request.content_length}")
         return create_production_lot()
     
     # Handle GET request (Display production lots)
