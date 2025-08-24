@@ -25,12 +25,21 @@ app.secret_key = 'dersa_ecoquality_secret_key_2025'
 CORS(app)
 
 # Initialize local database
+db = None
 try:
     db = LocalDatabaseManager()
     db.seed_initial_data()
     logger.info("Local database initialized successfully")
 except Exception as e:
     logger.error(f"Database initialization failed: {e}")
+    # Re-attempt initialization with just basic setup
+    try:
+        db = LocalDatabaseManager()
+        logger.info("Database re-initialized successfully")
+    except Exception as e2:
+        logger.critical(f"Critical: Database initialization completely failed: {e2}")
+        # Create a minimal fallback - this should never happen in normal operation
+        raise RuntimeError(f"Cannot start application without database: {e2}")
 
 # Global variable to store request start times
 request_times = {}
