@@ -1045,6 +1045,17 @@ def check_lot_number():
         logger.error(f"Check lot number failed: {e}")
         return jsonify({'error': 'Failed to check lot number'}), 500
 
+@app.route('/api/test-session')
+def test_session():
+    """Test current session status"""
+    return jsonify({
+        'session_exists': 'user_id' in session,
+        'user_id': session.get('user_id'),
+        'username': session.get('username'),
+        'role': session.get('role'),
+        'session_keys': list(session.keys())
+    })
+
 # ============================================================================
 # QUALITY CONTROL ROUTES
 # ============================================================================

@@ -22,7 +22,7 @@
                 </h5>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ url_for('production') }}">
+                <form method="POST" action="{{ url_for('production') }}" id="production-form">
                     <div class="row">
                         <div class="col-md-3">
                             <div class="mb-3">
@@ -281,6 +281,19 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!batchInput.value.trim()) {
         generateLotNumber();
     }
+    
+    // Test session status
+    fetch('/api/test-session')
+        .then(response => response.json())
+        .then(data => {
+            console.log('🔐 Session Status:', data);
+            if (!data.session_exists) {
+                console.error('❌ Session not found - forms may fail to submit');
+            } else {
+                console.log('✅ Session active for user:', data.username);
+            }
+        })
+        .catch(error => console.error('Session test failed:', error));
     
     // Add comprehensive form submission debugging
     const form = document.querySelector('form[method="POST"]');
