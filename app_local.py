@@ -208,96 +208,175 @@ def dashboard():
 
 @app.route('/production', methods=['GET', 'POST'])
 def production():
+    """Production Lot Management - Rebuilt Logic"""
+    # Ensure user is authenticated
     if 'user_id' not in session:
+        flash('Veuillez vous connecter pour accéder à cette page', 'error')
         return redirect(url_for('login'))
     
+    # Handle POST request (Create new production lot)
     if request.method == 'POST':
+        return create_production_lot()
+    
+    # Handle GET request (Display production lots)
+    return display_production_lots()
+
+def create_production_lot():
+    """Create a new production lot with robust validation"""
+    try:
+        logger.info(f"Creating production lot - User: {session.get('username')} (ID: {session.get('user_id')})")
+        
+        # Extract and validate form data
+        form_data = {
+            'batch_number': request.form.get('batch_number', '').strip(),
+            'product_type': request.form.get('product_type', '').strip(),
+            'production_date': request.form.get('production_date', '').strip(),
+            'planned_quantity': request.form.get('planned_quantity', '').strip(),
+            'kiln_number': request.form.get('kiln_number', '').strip(),
+            'firing_temperature': request.form.get('firing_temperature', '').strip(),
+            'firing_duration': request.form.get('firing_duration', '').strip(),
+            'notes': request.form.get('notes', '').strip()
+        }
+        
+        logger.info(f"Form data received: {form_data}")
+        
+        # Validate required fields
+        required_fields = ['batch_number', 'product_type', 'production_date', 'planned_quantity']
+        missing_fields = [field for field in required_fields if not form_data[field]]
+        
+        if missing_fields:
+            error_msg = f"Champs obligatoires manquants: {', '.join(missing_fields)}"
+            flash(error_msg, 'error')
+            logger.warning(f"Validation failed: {error_msg}")
+            return redirect(url_for('production'))
+        
+        # Validate and convert data types
         try:
-            # Validate required fields
-            batch_number = request.form.get('batch_number')
-            product_type = request.form.get('product_type')
-            production_date = request.form.get('production_date')
-            planned_quantity = request.form.get('planned_quantity')
-            
-            if not all([batch_number, product_type, production_date, planned_quantity]):
-                flash('Veuillez remplir tous les champs obligatoires', 'error')
+            planned_quantity = int(form_data['planned_quantity'])
+            if planned_quantity <= 0:
+                raise ValueError("La quantité doit être positive")
+        except (ValueError, TypeError):
+            flash('La quantité prévue doit être un nombre entier positif', 'error')
+            return redirect(url_for('production'))
+        
+        firing_temperature = None
+        if form_data['firing_temperature']:
+            try:
+                firing_temperature = float(form_data['firing_temperature'])
+                if firing_temperature < 500 or firing_temperature > 1500:
+                    raise ValueError("Température hors limites")
+            except (ValueError, TypeError):
+                flash('La température de cuisson doit être un nombre entre 500 et 1500°C', 'error')
                 return redirect(url_for('production'))
-            
-            # Prepare data with proper NULL handling
-            data = {
-                'batch_number': batch_number.strip(),
-                'product_type': product_type,
-                'production_date': production_date,
-                'planned_quantity': int(planned_quantity),
-                'kiln_number': request.form.get('kiln_number').strip() if request.form.get('kiln_number') else None,
-                'firing_temperature': float(request.form.get('firing_temperature')) if request.form.get('firing_temperature') else None,
-                'firing_duration': request.form.get('firing_duration').strip() if request.form.get('firing_duration') else None,
-                'supervisor_id': session.get('user_id'),
-                'notes': request.form.get('notes').strip() if request.form.get('notes') else None,
-                'status': 'planned',
-                'actual_quantity': None
-            }
-            
-            # Check if batch number already exists
-            existing_batch = db.execute_single(
-                "SELECT id FROM production_batches WHERE batch_number = ?", 
-                (data['batch_number'],)
-            )
-            if existing_batch:
-                flash(f'Le numéro de lot "{data["batch_number"]}" existe déjà', 'error')
-                return redirect(url_for('production'))
-            
-            batch = db.insert_record('production_batches', data)
-            
-            if batch:
-                flash(f'Lot de production "{data["batch_number"]}" créé avec succès', 'success')
-                logger.info(f"Production batch created: {data['batch_number']} by user {session.get('user_id')}")
-            else:
-                flash('Échec de la création du lot de production', 'error')
-                logger.error(f"Failed to create production batch: {data}")
-                
-        except ValueError as ve:
-            logger.error(f"Production batch validation error: {ve}")
-            flash('Erreur de validation des données. Vérifiez les valeurs numériques.', 'error')
-        except Exception as e:
-            logger.error(f"Production batch creation error: {e}")
-            flash('Erreur lors de la création du lot de production', 'error')
-    
-    # Get batches with filters
-    status = request.args.get('status')
-    date_from = request.args.get('date_from')
-    date_to = request.args.get('date_to')
-    
-    query = """
-        SELECT pb.*, u.full_name as supervisor_name
-        FROM production_batches pb
-        LEFT JOIN users u ON pb.supervisor_id = u.id
-    """
-    conditions = []
-    params = []
-    
-    if status:
-        conditions.append("pb.status = ?")
-        params.append(status)
-    if date_from:
-        conditions.append("pb.production_date >= ?")
-        params.append(date_from)
-    if date_to:
-        conditions.append("pb.production_date <= ?")
-        params.append(date_to)
-    
-    if conditions:
-        query += " WHERE " + " AND ".join(conditions)
-    
-    query += " ORDER BY pb.production_date DESC"
-    
-    batches = db.execute_query(query, tuple(params))
-    
-    # Add today's date for the form
-    from datetime import date
-    today = date.today().isoformat()
-    
-    return render_template('production.html', batches=batches, today=today)
+        
+        # Check for duplicate batch number
+        existing_batch = db.execute_single(
+            "SELECT id, batch_number FROM production_batches WHERE batch_number = ?", 
+            (form_data['batch_number'],)
+        )
+        
+        if existing_batch:
+            flash(f'Erreur: Le numéro de lot "{form_data["batch_number"]}" existe déjà', 'error')
+            logger.warning(f"Duplicate batch number attempted: {form_data['batch_number']}")
+            return redirect(url_for('production'))
+        
+        # Prepare data for database insertion
+        lot_data = {
+            'batch_number': form_data['batch_number'],
+            'product_type': form_data['product_type'],
+            'production_date': form_data['production_date'],
+            'planned_quantity': planned_quantity,
+            'kiln_number': form_data['kiln_number'] if form_data['kiln_number'] else None,
+            'firing_temperature': firing_temperature,
+            'firing_duration': form_data['firing_duration'] if form_data['firing_duration'] else None,
+            'supervisor_id': session.get('user_id'),
+            'notes': form_data['notes'] if form_data['notes'] else None,
+            'status': 'planned',
+            'actual_quantity': None
+        }
+        
+        logger.info(f"Inserting lot data: {lot_data}")
+        
+        # Insert into database
+        result = db.insert_record('production_batches', lot_data)
+        
+        if result:
+            success_msg = f'✅ Lot de production "{form_data["batch_number"]}" créé avec succès'
+            flash(success_msg, 'success')
+            logger.info(f"SUCCESS: Production lot created - {form_data['batch_number']} by user {session.get('user_id')}")
+        else:
+            flash('❌ Erreur: Impossible de créer le lot de production', 'error')
+            logger.error(f"Database insertion failed for batch: {form_data['batch_number']}")
+        
+        return redirect(url_for('production'))
+        
+    except Exception as e:
+        error_msg = f"Erreur système lors de la création du lot: {str(e)}"
+        flash(error_msg, 'error')
+        logger.error(f"CRITICAL ERROR in create_production_lot: {e}", exc_info=True)
+        return redirect(url_for('production'))
+
+def display_production_lots():
+    """Display production lots with filtering"""
+    try:
+        # Get filter parameters
+        status_filter = request.args.get('status', '').strip()
+        date_from = request.args.get('date_from', '').strip()
+        date_to = request.args.get('date_to', '').strip()
+        
+        logger.info(f"Displaying lots with filters - Status: {status_filter}, From: {date_from}, To: {date_to}")
+        
+        # Build query with filters
+        base_query = """
+            SELECT 
+                pb.*,
+                u.full_name as supervisor_name,
+                u.username as supervisor_username
+            FROM production_batches pb
+            LEFT JOIN users u ON pb.supervisor_id = u.id
+        """
+        
+        conditions = []
+        params = []
+        
+        if status_filter:
+            conditions.append("pb.status = ?")
+            params.append(status_filter)
+        
+        if date_from:
+            conditions.append("pb.production_date >= ?")
+            params.append(date_from)
+        
+        if date_to:
+            conditions.append("pb.production_date <= ?")
+            params.append(date_to)
+        
+        if conditions:
+            base_query += " WHERE " + " AND ".join(conditions)
+        
+        base_query += " ORDER BY pb.production_date DESC, pb.created_at DESC"
+        
+        # Execute query
+        batches = db.execute_query(base_query, tuple(params))
+        
+        if batches is None:
+            batches = []
+        
+        logger.info(f"Found {len(batches)} production lots")
+        
+        # Add today's date for the form
+        from datetime import date
+        today = date.today().isoformat()
+        
+        return render_template('production.html', batches=batches, today=today)
+        
+    except Exception as e:
+        logger.error(f"Error displaying production lots: {e}", exc_info=True)
+        flash('Erreur lors du chargement des lots de production', 'error')
+        # Return empty page with error
+        from datetime import date
+        today = date.today().isoformat()
+        return render_template('production.html', batches=[], today=today)
 
 @app.route('/quality', methods=['GET', 'POST'])
 def quality():
