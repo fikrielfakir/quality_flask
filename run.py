@@ -1,20 +1,18 @@
 #!/usr/bin/env python3
-import os
+"""
+Dersa EcoQuality - Application Entry Point
+Run the Flask application server
+"""
+
+from app import create_app
 import logging
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# Import the main Flask application
-from app import app
-
-if __name__ == "__main__":
-    # ALWAYS serve the app on port 5000
-    # this serves the API.
-    # It is the only port that is not firewalled.
-    port = 5000
-    host = "0.0.0.0"
-    
-    logger.info(f"Starting Dersa EcoQuality on port {port}")
-    app.run(host=host, port=port, debug=os.getenv("FLASK_ENV") == "development")
+if __name__ == '__main__':
+    try:
+        app = create_app()
+        logger = logging.getLogger(__name__)
+        logger.info("Starting Dersa EcoQuality on port 5000")
+        app.run(host='0.0.0.0', port=5000, debug=False)
+    except Exception as e:
+        print(f"Failed to start application: {e}")
+        raise

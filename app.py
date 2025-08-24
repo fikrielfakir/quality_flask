@@ -73,33 +73,22 @@ def create_app():
     @app.errorhandler(404)
     def not_found_error(error):
         return render_template('404.html'), 404
-    
+
     @app.errorhandler(500)
     def internal_error(error):
+        logger.error(f"Internal error: {error}")
         return render_template('500.html'), 500
-    
-    # Context processors for templates
-    @app.context_processor
-    def inject_user():
-        """Inject user session data into all templates"""
-        return {
-            'user_id': session.get('user_id'),
-            'username': session.get('username'),
-            'user_role': session.get('role'),
-            'full_name': session.get('full_name')
-        }
-    
+
+    # Index route
+    @app.route('/')
+    def index():
+        if 'user_id' in session:
+            return redirect(url_for('main.dashboard'))
+        return redirect(url_for('auth.login'))
+
     return app
 
-# Create the Flask application
-app = create_app()
-
+# For direct execution
 if __name__ == '__main__':
-    # ALWAYS serve the app on port 5000
-    # this serves the API.
-    # It is the only port that is not firewalled.
-    port = 5000
-    host = '0.0.0.0'
-    
-    logger.info(f"serving on port {port}")
-    app.run(host=host, port=port, debug=os.getenv('FLASK_ENV') == 'development')
+    app = create_app()
+    app.run(host='0.0.0.0', port=5000, debug=False)
