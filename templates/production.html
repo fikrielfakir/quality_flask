@@ -87,7 +87,7 @@
                             </div>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary" id="submit-btn">
                         <i class="fas fa-save"></i> Créer le Lot
                     </button>
                 </form>
@@ -280,6 +280,43 @@ document.addEventListener('DOMContentLoaded', function() {
     const batchInput = document.getElementById('batch_number');
     if (!batchInput.value.trim()) {
         generateLotNumber();
+    }
+    
+    // Add form submission debugging
+    const form = document.querySelector('form[method="POST"]');
+    const submitBtn = document.getElementById('submit-btn');
+    
+    if (form && submitBtn) {
+        form.addEventListener('submit', function(e) {
+            console.log('Form submission attempted');
+            
+            // Check required fields
+            const requiredFields = ['batch_number', 'product_type', 'production_date', 'planned_quantity'];
+            let allValid = true;
+            
+            requiredFields.forEach(fieldName => {
+                const field = document.getElementById(fieldName);
+                if (!field || !field.value.trim()) {
+                    console.error(`Missing required field: ${fieldName}`);
+                    allValid = false;
+                    if (field) {
+                        field.classList.add('is-invalid');
+                    }
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            });
+            
+            if (!allValid) {
+                e.preventDefault();
+                alert('Veuillez remplir tous les champs obligatoires');
+                return false;
+            }
+            
+            // Show loading state
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Création en cours...';
+            submitBtn.disabled = true;
+        });
     }
 });
 </script>
