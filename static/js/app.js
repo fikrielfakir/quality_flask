@@ -152,16 +152,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Utility functions
 function refreshDashboardData() {
-    fetch('/api/dashboard/kpis')
-        .then(response => response.json())
-        .then(data => {
-            // Update KPI cards
-            updateKPICard('total-batches', data.production.total_batches || 0);
-            updateKPICard('total-tests', data.quality.total_tests || 0);
-            updateKPICard('total-energy', (data.energy.total_consumption || 0).toFixed(1));
-            updateKPICard('total-waste', (data.waste.total_waste || 0).toFixed(1));
-        })
-        .catch(error => console.log('Dashboard refresh failed:', error));
+    // Refresh by reloading the page (simple pure Flask approach)
+    if (confirm('Refresh dashboard data?')) {
+        window.location.reload();
+    }
 }
 
 function updateKPICard(elementId, value) {

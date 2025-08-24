@@ -219,55 +219,44 @@
 // Set today's date as default
 document.getElementById('production_date').value = new Date().toISOString().split('T')[0];
 
-// Generate unique lot number
-async function generateLotNumber() {
+// Generate unique lot number (pure client-side)
+function generateLotNumber() {
     const btn = document.querySelector('button[onclick="generateLotNumber()"]');
     const input = document.getElementById('batch_number');
     
-    // Show loading state
+    // Show loading state briefly for UX
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
     btn.disabled = true;
     
     try {
-        // Get current date for format
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const day = String(today.getDate()).padStart(2, '0');
+        // Get current date and time for format
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
         
-        // Try different patterns until we find a unique one
-        let attempts = 0;
-        let lotNumber = '';
-        let isUnique = false;
+        // Generate unique lot number with timestamp
+        const lotNumber = `LOT-${year}${month}${day}-${hours}${minutes}${seconds}`;
         
-        while (!isUnique && attempts < 50) {
-            attempts++;
-            const sequence = String(attempts).padStart(3, '0');
-            lotNumber = `LOT-${year}${month}${day}-${sequence}`;
-            
-            // Check if this number exists
-            const response = await fetch(`/api/check-lot-number?number=${encodeURIComponent(lotNumber)}`);
-            const data = await response.json();
-            isUnique = !data.exists;
-        }
+        input.value = lotNumber;
+        input.focus();
         
-        if (isUnique) {
-            input.value = lotNumber;
-            input.focus();
-            // Flash success
-            input.classList.add('is-valid');
-            setTimeout(() => input.classList.remove('is-valid'), 2000);
-        } else {
-            throw new Error('Unable to generate unique lot number');
-        }
+        // Flash success
+        input.classList.add('is-valid');
+        setTimeout(() => input.classList.remove('is-valid'), 2000);
         
     } catch (error) {
         console.error('Error generating lot number:', error);
         alert('Erreur lors de la génération du numéro de lot. Veuillez essayer manuellement.');
     } finally {
-        // Restore button
-        btn.innerHTML = '<i class="fas fa-sync-alt"></i>';
-        btn.disabled = false;
+        // Restore button after brief delay
+        setTimeout(() => {
+            btn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+            btn.disabled = false;
+        }, 500);
     }
 }
 
@@ -281,19 +270,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!batchInput.value.trim()) {
         generateLotNumber();
     }
-    
-    // Test session status
-    fetch('/api/test-session')
-        .then(response => response.json())
-        .then(data => {
-            console.log('🔐 Session Status:', data);
-            if (!data.session_exists) {
-                console.error('❌ Session not found - forms may fail to submit');
-            } else {
-                console.log('✅ Session active for user:', data.username);
-            }
-        })
-        .catch(error => console.error('Session test failed:', error));
     
     // Add comprehensive form submission debugging
     const form = document.querySelector('form[method="POST"]');
